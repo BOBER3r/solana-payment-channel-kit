@@ -1,0 +1,33 @@
+# Source files (only ship dist/)
+src/
+tests/
+*.test.ts
+*.spec.ts
+
+# Build config
+tsconfig.json
+tsup.config.ts
+vitest.config.ts
+
+# Development files
+.eslintrc
+.eslintrc.json
+.prettierrc
+.editorconfig
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Misc
+node_modules/
+.DS_Store
+*.tsbuildinfo

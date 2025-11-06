@@ -1,0 +1,44 @@
+[toolchain]
+
+[features]
+resolution = true
+skip-lint = false
+seeds = false
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+
+[workspace]
+members = ["."]
+
+[programs.localnet]
+payment_channel = "CEVo4h4qnZkJVgzahQ9XwYz7a8NuCWdFcoiYiX6mZS1t"
+
+[programs.devnet]
+payment_channel = "CEVo4h4qnZkJVgzahQ9XwYz7a8NuCWdFcoiYiX6mZS1t"
+
+[programs.mainnet]
+payment_channel = "CEVo4h4qnZkJVgzahQ9XwYz7a8NuCWdFcoiYiX6mZS1t"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.test.json -t 1000000 tests/**/*.ts"
+
+[test]
+startup_wait = 10000
+
+[test.validator]
+
+[[test.validator.clone]]
+address = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+
+[[test.validator.clone]]
+address = "11111111111111111111111111111111"
+
+# Clone USDC mint for testing
+[[test.validator.clone]]
+address = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"

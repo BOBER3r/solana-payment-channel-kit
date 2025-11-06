@@ -1,0 +1,5 @@
+Known program addresses that need to be added:
+- tokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+- systemProgram: "11111111111111111111111111111111"
+- rent: "SysvarRent111111111111111111111111111111111"
+- instructionSysvar: "Sysvar1nstructions1111111111111111111111111"

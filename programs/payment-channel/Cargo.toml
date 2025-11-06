@@ -1,0 +1,31 @@
+[package]
+name = "payment-channel"
+version = "0.1.0"
+description = "Payment channel program for x402 protocol with off-chain micropayments"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "payment_channel"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+
+[dependencies]
+anchor-lang = { version = "0.31.0" }
+anchor-spl = { version = "0.31.0" }
+# DO NOT add solana-program - use anchor_lang::solana_program instead
+
+[dev-dependencies]
+# Use compatible versions with Anchor 0.31.0
+# anchor-client = "0.31.0"  # Temporarily disabled for BPF build due to indexmap rust version conflict
+solana-program = "2.3.0"  # For integration tests
+hex = "0.4"  # For test vector verification
+
+[profile.release]
+overflow-checks = true

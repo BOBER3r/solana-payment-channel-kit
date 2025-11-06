@@ -1,0 +1,870 @@
+/**
+ * Anchor IDL for the payment_channel program
+ * Manually created based on the Rust program structure
+ */
+
+export type PaymentChannelIDL = {
+  version: '0.1.0';
+  name: 'payment_channel';
+  instructions: [
+    {
+      name: 'openChannel';
+      accounts: [
+        {
+          name: 'channel';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'client';
+          isMut: true;
+          isSigner: true;
+        },
+        {
+          name: 'server';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'clientTokenAccount';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'channelTokenAccount';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'usdcMint';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'tokenProgram';
+          address: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'systemProgram';
+          address: '11111111111111111111111111111111';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'rent';
+          address: 'SysvarRent111111111111111111111111111111111';
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [
+        {
+          name: 'channelId';
+          type: {
+            array: ['u8', 32];
+          };
+        },
+        {
+          name: 'initialDeposit';
+          type: 'u64';
+        },
+        {
+          name: 'expiry';
+          type: 'i64';
+        }
+      ];
+    },
+    {
+      name: 'addFunds';
+      accounts: [
+        {
+          name: 'channel';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'client';
+          isMut: true;
+          isSigner: true;
+        },
+        {
+          name: 'clientTokenAccount';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'channelTokenAccount';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'tokenProgram';
+          address: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [
+        {
+          name: 'amount';
+          type: 'u64';
+        }
+      ];
+    },
+    {
+      name: 'claimPayment';
+      accounts: [
+        {
+          name: 'channel';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'server';
+          isMut: true;
+          isSigner: true;
+        },
+        {
+          name: 'channelTokenAccount';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'serverTokenAccount';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'tokenProgram';
+          address: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'instructionSysvar';
+          address: 'Sysvar1nstructions1111111111111111111111111';
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [
+        {
+          name: 'amount';
+          type: 'u64';
+        },
+        {
+          name: 'nonce';
+          type: 'u64';
+        },
+        {
+          name: 'clientSignature';
+          type: {
+            array: ['u8', 64];
+          };
+        }
+      ];
+    },
+    {
+      name: 'closeChannel';
+      accounts: [
+        {
+          name: 'channel';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'closer';
+          isMut: false;
+          isSigner: true;
+        },
+        {
+          name: 'client';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'channelTokenAccount';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'clientTokenAccount';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'tokenProgram';
+          address: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [];
+    },
+    {
+      name: 'disputeChannel';
+      accounts: [
+        {
+          name: 'channel';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'disputer';
+          isMut: false;
+          isSigner: true;
+        }
+      ];
+      args: [];
+    },
+    {
+      name: 'disputeClose';
+      accounts: [
+        {
+          name: 'channel';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'server';
+          isMut: true;
+          isSigner: true;
+        },
+        {
+          name: 'channelTokenAccount';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'serverTokenAccount';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'clientTokenAccount';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'tokenProgram';
+          address: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'instructionSysvar';
+          address: 'Sysvar1nstructions1111111111111111111111111';
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [
+        {
+          name: 'latestAmount';
+          type: 'u64';
+        },
+        {
+          name: 'latestNonce';
+          type: 'u64';
+        },
+        {
+          name: 'clientSignature';
+          type: {
+            array: ['u8', 64];
+          };
+        }
+      ];
+    },
+    {
+      name: 'resolveDispute';
+      accounts: [
+        {
+          name: 'channel';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'authority';
+          isMut: false;
+          isSigner: true;
+        },
+        {
+          name: 'channelTokenAccount';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'clientTokenAccount';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'serverTokenAccount';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'tokenProgram';
+          address: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [
+        {
+          name: 'toClient';
+          type: 'u64';
+        },
+        {
+          name: 'toServer';
+          type: 'u64';
+        }
+      ];
+    }
+  ];
+  accounts: [
+    {
+      name: 'paymentChannel';
+      type: {
+        kind: 'struct';
+        fields: [
+          {
+            name: 'channelId';
+            type: {
+              array: ['u8', 32];
+            };
+          },
+          {
+            name: 'client';
+            type: 'pubkey';
+          },
+          {
+            name: 'server';
+            type: 'pubkey';
+          },
+          {
+            name: 'clientDeposit';
+            type: 'u64';
+          },
+          {
+            name: 'serverClaimed';
+            type: 'u64';
+          },
+          {
+            name: 'nonce';
+            type: 'u64';
+          },
+          {
+            name: 'expiry';
+            type: 'i64';
+          },
+          {
+            name: 'status';
+            type: {
+              defined: 'ChannelStatus';
+            };
+          },
+          {
+            name: 'createdAt';
+            type: 'i64';
+          },
+          {
+            name: 'lastUpdate';
+            type: 'i64';
+          },
+          {
+            name: 'bump';
+            type: 'u8';
+          }
+        ];
+      };
+    }
+  ];
+  types: [
+    {
+      name: 'ChannelStatus';
+      type: {
+        kind: 'enum';
+        variants: [
+          {
+            name: 'Open';
+          },
+          {
+            name: 'Closed';
+          },
+          {
+            name: 'Disputed';
+          }
+        ];
+      };
+    }
+  ];
+  events: [
+    {
+      name: 'ChannelOpened';
+      fields: [
+        {
+          name: 'channelId';
+          type: {
+            array: ['u8', 32];
+          };
+          index: false;
+        },
+        {
+          name: 'client';
+          type: 'pubkey';
+          index: false;
+        },
+        {
+          name: 'server';
+          type: 'pubkey';
+          index: false;
+        },
+        {
+          name: 'deposit';
+          type: 'u64';
+          index: false;
+        },
+        {
+          name: 'expiry';
+          type: 'i64';
+          index: false;
+        }
+      ];
+    },
+    {
+      name: 'FundsAdded';
+      fields: [
+        {
+          name: 'channelId';
+          type: {
+            array: ['u8', 32];
+          };
+          index: false;
+        },
+        {
+          name: 'amount';
+          type: 'u64';
+          index: false;
+        },
+        {
+          name: 'newBalance';
+          type: 'u64';
+          index: false;
+        }
+      ];
+    },
+    {
+      name: 'PaymentClaimed';
+      fields: [
+        {
+          name: 'channelId';
+          type: {
+            array: ['u8', 32];
+          };
+          index: false;
+        },
+        {
+          name: 'amount';
+          type: 'u64';
+          index: false;
+        },
+        {
+          name: 'totalClaimed';
+          type: 'u64';
+          index: false;
+        },
+        {
+          name: 'nonce';
+          type: 'u64';
+          index: false;
+        },
+        {
+          name: 'remaining';
+          type: 'u64';
+          index: false;
+        }
+      ];
+    },
+    {
+      name: 'ChannelClosed';
+      fields: [
+        {
+          name: 'channelId';
+          type: {
+            array: ['u8', 32];
+          };
+          index: false;
+        },
+        {
+          name: 'remainingReturned';
+          type: 'u64';
+          index: false;
+        }
+      ];
+    },
+    {
+      name: 'DisputeInitiated';
+      fields: [
+        {
+          name: 'channelId';
+          type: {
+            array: ['u8', 32];
+          };
+          index: false;
+        },
+        {
+          name: 'disputer';
+          type: 'pubkey';
+          index: false;
+        },
+        {
+          name: 'reason';
+          type: 'string';
+          index: false;
+        }
+      ];
+    },
+    {
+      name: 'ChannelDisputeClosed';
+      fields: [
+        {
+          name: 'channelId';
+          type: {
+            array: ['u8', 32];
+          };
+          index: false;
+        },
+        {
+          name: 'toServer';
+          type: 'u64';
+          index: false;
+        },
+        {
+          name: 'toClient';
+          type: 'u64';
+          index: false;
+        }
+      ];
+    },
+    {
+      name: 'DisputeResolved';
+      fields: [
+        {
+          name: 'channelId';
+          type: {
+            array: ['u8', 32];
+          };
+          index: false;
+        },
+        {
+          name: 'toClient';
+          type: 'u64';
+          index: false;
+        },
+        {
+          name: 'toServer';
+          type: 'u64';
+          index: false;
+        }
+      ];
+    }
+  ];
+  errors: [
+    {
+      code: 6000;
+      name: 'InvalidExpiry';
+      msg: 'Expiry must be in the future';
+    },
+    {
+      code: 6001;
+      name: 'DepositTooSmall';
+      msg: 'Deposit must be at least 1 USDC';
+    },
+    {
+      code: 6002;
+      name: 'ChannelClosed';
+      msg: 'Channel is closed';
+    },
+    {
+      code: 6003;
+      name: 'InvalidDeposit';
+      msg: 'Invalid deposit amount';
+    },
+    {
+      code: 6004;
+      name: 'ArithmeticOverflow';
+      msg: 'Arithmetic overflow';
+    },
+    {
+      code: 6005;
+      name: 'InsufficientFunds';
+      msg: 'Insufficient funds in channel';
+    },
+    {
+      code: 6006;
+      name: 'InvalidNonce';
+      msg: 'Invalid nonce - must be strictly increasing';
+    },
+    {
+      code: 6007;
+      name: 'NonceIncrementTooLarge';
+      msg: 'Nonce increment too large';
+    },
+    {
+      code: 6008;
+      name: 'InvalidAmount';
+      msg: 'Invalid amount';
+    },
+    {
+      code: 6009;
+      name: 'SignatureVerificationFailed';
+      msg: 'Signature verification failed';
+    },
+    {
+      code: 6010;
+      name: 'CannotClose';
+      msg: 'Cannot close channel';
+    },
+    {
+      code: 6011;
+      name: 'UnauthorizedAccess';
+      msg: 'Unauthorized access';
+    },
+    {
+      code: 6012;
+      name: 'ChannelNotDisputed';
+      msg: 'Channel is not disputed';
+    },
+    {
+      code: 6013;
+      name: 'InvalidResolution';
+      msg: 'Invalid dispute resolution';
+    }
+  ];
+};
+
+export const IDL = {
+  version: '0.1.0',
+  name: 'payment_channel',
+  instructions: [
+    {
+      name: 'openChannel',
+      accounts: [
+        { name: 'channel', isMut: true, isSigner: false },
+        { name: 'client', isMut: true, isSigner: true },
+        { name: 'server', isMut: false, isSigner: false },
+        { name: 'clientTokenAccount', isMut: true, isSigner: false },
+        { name: 'channelTokenAccount', isMut: true, isSigner: false },
+        { name: 'usdcMint', isMut: false, isSigner: false },
+        { name: 'tokenProgram', isMut: false, isSigner: false, address: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' },
+        { name: 'systemProgram', isMut: false, isSigner: false, address: '11111111111111111111111111111111' },
+        { name: 'rent', isMut: false, isSigner: false, address: 'SysvarRent111111111111111111111111111111111' },
+      ],
+      args: [
+        { name: 'channelId', type: { array: ['u8', 32] } },
+        { name: 'initialDeposit', type: 'u64' },
+        { name: 'expiry', type: 'i64' },
+      ],
+    },
+    {
+      name: 'addFunds',
+      accounts: [
+        { name: 'channel', isMut: true, isSigner: false },
+        { name: 'client', isMut: true, isSigner: true },
+        { name: 'clientTokenAccount', isMut: true, isSigner: false },
+        { name: 'channelTokenAccount', isMut: true, isSigner: false },
+        { name: 'tokenProgram', isMut: false, isSigner: false, address: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' },
+      ],
+      args: [{ name: 'amount', type: 'u64' }],
+    },
+    {
+      name: 'claimPayment',
+      accounts: [
+        { name: 'channel', isMut: true, isSigner: false },
+        { name: 'server', isMut: true, isSigner: true },
+        { name: 'channelTokenAccount', isMut: true, isSigner: false },
+        { name: 'serverTokenAccount', isMut: true, isSigner: false },
+        { name: 'tokenProgram', isMut: false, isSigner: false, address: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' },
+        { name: 'instructionSysvar', isMut: false, isSigner: false, address: 'Sysvar1nstructions1111111111111111111111111' },
+      ],
+      args: [
+        { name: 'amount', type: 'u64' },
+        { name: 'nonce', type: 'u64' },
+        { name: 'clientSignature', type: { array: ['u8', 64] } },
+      ],
+    },
+    {
+      name: 'closeChannel',
+      accounts: [
+        { name: 'channel', isMut: true, isSigner: false },
+        { name: 'closer', isMut: false, isSigner: true },
+        { name: 'client', isMut: false, isSigner: false },
+        { name: 'channelTokenAccount', isMut: true, isSigner: false },
+        { name: 'clientTokenAccount', isMut: true, isSigner: false },
+        { name: 'tokenProgram', isMut: false, isSigner: false, address: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' },
+      ],
+      args: [],
+    },
+    {
+      name: 'disputeChannel',
+      accounts: [
+        { name: 'channel', isMut: true, isSigner: false },
+        { name: 'disputer', isMut: false, isSigner: true },
+      ],
+      args: [],
+    },
+    {
+      name: 'disputeClose',
+      accounts: [
+        { name: 'channel', isMut: true, isSigner: false },
+        { name: 'server', isMut: true, isSigner: true },
+        { name: 'channelTokenAccount', isMut: true, isSigner: false },
+        { name: 'serverTokenAccount', isMut: true, isSigner: false },
+        { name: 'clientTokenAccount', isMut: true, isSigner: false },
+        { name: 'tokenProgram', isMut: false, isSigner: false, address: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' },
+        { name: 'instructionSysvar', isMut: false, isSigner: false, address: 'Sysvar1nstructions1111111111111111111111111' },
+      ],
+      args: [
+        { name: 'latestAmount', type: 'u64' },
+        { name: 'latestNonce', type: 'u64' },
+        { name: 'clientSignature', type: { array: ['u8', 64] } },
+      ],
+    },
+    {
+      name: 'resolveDispute',
+      accounts: [
+        { name: 'channel', isMut: true, isSigner: false },
+        { name: 'authority', isMut: false, isSigner: true },
+        { name: 'channelTokenAccount', isMut: true, isSigner: false },
+        { name: 'clientTokenAccount', isMut: true, isSigner: false },
+        { name: 'serverTokenAccount', isMut: true, isSigner: false },
+        { name: 'tokenProgram', isMut: false, isSigner: false, address: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' },
+      ],
+      args: [
+        { name: 'toClient', type: 'u64' },
+        { name: 'toServer', type: 'u64' },
+      ],
+    },
+  ],
+  accounts: [
+    {
+      name: 'paymentChannel',
+      type: {
+        kind: 'struct',
+        fields: [
+          { name: 'channelId', type: { array: ['u8', 32] } },
+          { name: 'client', type: 'pubkey' },
+          { name: 'server', type: 'pubkey' },
+          { name: 'clientDeposit', type: 'u64' },
+          { name: 'serverClaimed', type: 'u64' },
+          { name: 'nonce', type: 'u64' },
+          { name: 'expiry', type: 'i64' },
+          { name: 'status', type: { defined: 'ChannelStatus' } },
+          { name: 'createdAt', type: 'i64' },
+          { name: 'lastUpdate', type: 'i64' },
+          { name: 'bump', type: 'u8' },
+        ],
+      },
+    },
+  ],
+  types: [
+    {
+      name: 'ChannelStatus',
+      type: {
+        kind: 'enum',
+        variants: [{ name: 'Open' }, { name: 'Closed' }, { name: 'Disputed' }],
+      },
+    },
+  ],
+  events: [
+    {
+      name: 'ChannelOpened',
+      fields: [
+        { name: 'channelId', type: { array: ['u8', 32] }, index: false },
+        { name: 'client', type: 'pubkey', index: false },
+        { name: 'server', type: 'pubkey', index: false },
+        { name: 'deposit', type: 'u64', index: false },
+        { name: 'expiry', type: 'i64', index: false },
+      ],
+    },
+    {
+      name: 'FundsAdded',
+      fields: [
+        { name: 'channelId', type: { array: ['u8', 32] }, index: false },
+        { name: 'amount', type: 'u64', index: false },
+        { name: 'newBalance', type: 'u64', index: false },
+      ],
+    },
+    {
+      name: 'PaymentClaimed',
+      fields: [
+        { name: 'channelId', type: { array: ['u8', 32] }, index: false },
+        { name: 'amount', type: 'u64', index: false },
+        { name: 'totalClaimed', type: 'u64', index: false },
+        { name: 'nonce', type: 'u64', index: false },
+        { name: 'remaining', type: 'u64', index: false },
+      ],
+    },
+    {
+      name: 'ChannelClosed',
+      fields: [
+        { name: 'channelId', type: { array: ['u8', 32] }, index: false },
+        { name: 'remainingReturned', type: 'u64', index: false },
+      ],
+    },
+    {
+      name: 'DisputeInitiated',
+      fields: [
+        { name: 'channelId', type: { array: ['u8', 32] }, index: false },
+        { name: 'disputer', type: 'pubkey', index: false },
+        { name: 'reason', type: 'string', index: false },
+      ],
+    },
+    {
+      name: 'ChannelDisputeClosed',
+      fields: [
+        { name: 'channelId', type: { array: ['u8', 32] }, index: false },
+        { name: 'toServer', type: 'u64', index: false },
+        { name: 'toClient', type: 'u64', index: false },
+      ],
+    },
+    {
+      name: 'DisputeResolved',
+      fields: [
+        { name: 'channelId', type: { array: ['u8', 32] }, index: false },
+        { name: 'toClient', type: 'u64', index: false },
+        { name: 'toServer', type: 'u64', index: false },
+      ],
+    },
+  ],
+  errors: [
+    { code: 6000, name: 'InvalidExpiry', msg: 'Expiry must be in the future' },
+    { code: 6001, name: 'DepositTooSmall', msg: 'Deposit must be at least 1 USDC' },
+    { code: 6002, name: 'ChannelClosed', msg: 'Channel is closed' },
+    { code: 6003, name: 'InvalidDeposit', msg: 'Invalid deposit amount' },
+    { code: 6004, name: 'ArithmeticOverflow', msg: 'Arithmetic overflow' },
+    { code: 6005, name: 'InsufficientFunds', msg: 'Insufficient funds in channel' },
+    {
+      code: 6006,
+      name: 'InvalidNonce',
+      msg: 'Invalid nonce - must be strictly increasing',
+    },
+    { code: 6007, name: 'NonceIncrementTooLarge', msg: 'Nonce increment too large' },
+    { code: 6008, name: 'InvalidAmount', msg: 'Invalid amount' },
+    {
+      code: 6009,
+      name: 'SignatureVerificationFailed',
+      msg: 'Signature verification failed',
+    },
+    { code: 6010, name: 'CannotClose', msg: 'Cannot close channel' },
+    { code: 6011, name: 'UnauthorizedAccess', msg: 'Unauthorized access' },
+    { code: 6012, name: 'ChannelNotDisputed', msg: 'Channel is not disputed' },
+    { code: 6013, name: 'InvalidResolution', msg: 'Invalid dispute resolution' },
+  ],
+  // metadata: {
+  //   address: 'CEVo4h4qnZkJVgzahQ9XwYz7a8NuCWdFcoiYiX6mZS1t'
+  // }
+};

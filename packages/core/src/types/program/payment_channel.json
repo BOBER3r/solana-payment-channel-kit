@@ -1,0 +1,1298 @@
+{
+  "address": "CEVo4h4qnZkJVgzahQ9XwYz7a8NuCWdFcoiYiX6mZS1t",
+  "metadata": {
+    "name": "payment_channel",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Payment channel program for x402 protocol with off-chain micropayments"
+  },
+  "instructions": [
+    {
+      "name": "add_funds",
+      "docs": [
+        "Add more funds to an existing channel",
+        "Allows client to top up the channel without closing and reopening",
+        "",
+        "# Arguments",
+        "* `amount` - Amount of USDC to add (in micro USDC)",
+        "",
+        "# Security",
+        "- Only the channel client can add funds",
+        "- Channel must be in Open status"
+      ],
+      "discriminator": [
+        132,
+        237,
+        76,
+        57,
+        80,
+        10,
+        179,
+        138
+      ],
+      "accounts": [
+        {
+          "name": "channel",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  104,
+                  97,
+                  110,
+                  110,
+                  101,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "channel.channel_id",
+                "account": "PaymentChannel"
+              }
+            ]
+          }
+        },
+        {
+          "name": "channel_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  104,
+                  97,
+                  110,
+                  110,
+                  101,
+                  108,
+                  95,
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "channel.channel_id",
+                "account": "PaymentChannel"
+              }
+            ]
+          }
+        },
+        {
+          "name": "client",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "client_token_account",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "claim_payment",
+      "docs": [
+        "Server claims payment with client's signed authorization",
+        "This is the KEY operation that happens after many off-chain payments accumulate",
+        "",
+        "# Arguments",
+        "* `amount` - Total cumulative amount server is claiming (not incremental)",
+        "* `nonce` - Monotonically increasing nonce for replay protection",
+        "* `client_signature` - Ed25519 signature from client authorizing this claim",
+        "",
+        "# Off-chain Flow",
+        "1. Client creates signed payment authorization for each API call (off-chain)",
+        "2. Server verifies signature and provides service (off-chain)",
+        "3. Periodically, server submits latest authorization on-chain to claim funds",
+        "",
+        "# Security",
+        "- Signature verification ensures client authorized this payment",
+        "- Nonce must be strictly increasing to prevent replay attacks",
+        "- Amount cannot exceed deposited funds",
+        "- Only the designated server can claim"
+      ],
+      "discriminator": [
+        69,
+        112,
+        250,
+        167,
+        37,
+        156,
+        200,
+        30
+      ],
+      "accounts": [
+        {
+          "name": "channel",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  104,
+                  97,
+                  110,
+                  110,
+                  101,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "channel.channel_id",
+                "account": "PaymentChannel"
+              }
+            ]
+          }
+        },
+        {
+          "name": "channel_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  104,
+                  97,
+                  110,
+                  110,
+                  101,
+                  108,
+                  95,
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "channel.channel_id",
+                "account": "PaymentChannel"
+              }
+            ]
+          }
+        },
+        {
+          "name": "server",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "server_token_account",
+          "writable": true
+        },
+        {
+          "name": "instruction_sysvar",
+          "address": "Sysvar1nstructions1111111111111111111111111"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "nonce",
+          "type": "u64"
+        },
+        {
+          "name": "client_signature",
+          "type": {
+            "array": [
+              "u8",
+              64
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "close_channel",
+      "docs": [
+        "Close channel and return remaining funds to client",
+        "Can be called by either party after expiry, or by client anytime if fully settled",
+        "",
+        "# Security",
+        "- Can only close if expired OR client has no remaining balance",
+        "- Remaining funds always go back to client",
+        "- Channel is marked as Closed to prevent further operations"
+      ],
+      "discriminator": [
+        0,
+        104,
+        36,
+        1,
+        66,
+        0,
+        103,
+        157
+      ],
+      "accounts": [
+        {
+          "name": "channel",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  104,
+                  97,
+                  110,
+                  110,
+                  101,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "channel.channel_id",
+                "account": "PaymentChannel"
+              }
+            ]
+          }
+        },
+        {
+          "name": "channel_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  104,
+                  97,
+                  110,
+                  110,
+                  101,
+                  108,
+                  95,
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "channel.channel_id",
+                "account": "PaymentChannel"
+              }
+            ]
+          }
+        },
+        {
+          "name": "closer",
+          "docs": [
+            "Party closing the channel (client, server, or anyone if expired)"
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "client_token_account",
+          "docs": [
+            "Client's token account to receive remaining funds"
+          ],
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "dispute_channel",
+      "docs": [
+        "Dispute channel - initiate dispute resolution process",
+        "Freezes the channel for manual review",
+        "",
+        "# Use Cases",
+        "- Client believes server overcharged",
+        "- Server believes client is attempting fraud",
+        "- Either party suspects account compromise",
+        "",
+        "# Security",
+        "- Can only be called by client or server",
+        "- Changes status to Disputed, preventing further claims",
+        "- Requires manual resolution or time-based auto-close"
+      ],
+      "discriminator": [
+        62,
+        30,
+        173,
+        35,
+        100,
+        219,
+        251,
+        118
+      ],
+      "accounts": [
+        {
+          "name": "channel",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  104,
+                  97,
+                  110,
+                  110,
+                  101,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "channel.channel_id",
+                "account": "PaymentChannel"
+              }
+            ]
+          }
+        },
+        {
+          "name": "disputer",
+          "docs": [
+            "Party initiating the dispute (must be client or server)"
+          ],
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "dispute_close",
+      "docs": [
+        "Emergency close with latest signed state",
+        "Server can use this to close immediately with the latest authorization",
+        "Useful if client disappears or channel needs immediate settlement",
+        "",
+        "# Arguments",
+        "* `latest_amount` - Latest cumulative amount from client's signature",
+        "* `latest_nonce` - Latest nonce from client's signature",
+        "* `client_signature` - Client's signature authorizing this amount",
+        "",
+        "# Security",
+        "- Must provide valid signature from client",
+        "- Nonce must be >= current nonce (accepts latest state)",
+        "- Only server can call this",
+        "- Settles based on client's signed authorization"
+      ],
+      "discriminator": [
+        238,
+        219,
+        107,
+        139,
+        243,
+        19,
+        45,
+        225
+      ],
+      "accounts": [
+        {
+          "name": "channel",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  104,
+                  97,
+                  110,
+                  110,
+                  101,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "channel.channel_id",
+                "account": "PaymentChannel"
+              }
+            ]
+          }
+        },
+        {
+          "name": "channel_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  104,
+                  97,
+                  110,
+                  110,
+                  101,
+                  108,
+                  95,
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "channel.channel_id",
+                "account": "PaymentChannel"
+              }
+            ]
+          }
+        },
+        {
+          "name": "server",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "server_token_account",
+          "writable": true
+        },
+        {
+          "name": "client_token_account",
+          "writable": true
+        },
+        {
+          "name": "instruction_sysvar",
+          "address": "Sysvar1nstructions1111111111111111111111111"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "latest_amount",
+          "type": "u64"
+        },
+        {
+          "name": "latest_nonce",
+          "type": "u64"
+        },
+        {
+          "name": "client_signature",
+          "type": {
+            "array": [
+              "u8",
+              64
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "open_channel",
+      "docs": [
+        "Open a new payment channel",
+        "Client locks up USDC, server can claim incrementally with signed authorizations",
+        "",
+        "# Arguments",
+        "* `channel_id` - Unique identifier for this channel (32 bytes)",
+        "* `initial_deposit` - Amount of USDC to deposit (in micro USDC, 6 decimals)",
+        "* `expiry` - Unix timestamp when channel expires and can be closed",
+        "",
+        "# Security",
+        "- Only the client who signs can open the channel",
+        "- Funds are locked in a PDA controlled by the program",
+        "- Channel ID must be unique (account init will fail if it exists)"
+      ],
+      "discriminator": [
+        91,
+        45,
+        253,
+        71,
+        140,
+        166,
+        107,
+        109
+      ],
+      "accounts": [
+        {
+          "name": "channel",
+          "docs": [
+            "Channel state account (PDA)",
+            "Seeds: [b\"channel\", channel_id]"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  104,
+                  97,
+                  110,
+                  110,
+                  101,
+                  108
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "channel_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "channel_token_account",
+          "docs": [
+            "Channel's token account for holding USDC escrow",
+            "Seeds: [b\"channel_token\", channel_id]",
+            "Authority is the channel PDA itself"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  104,
+                  97,
+                  110,
+                  110,
+                  101,
+                  108,
+                  95,
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "channel_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "client",
+          "docs": [
+            "Client who is opening and funding the channel"
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "server",
+          "docs": [
+            "Server who will receive payments from this channel"
+          ]
+        },
+        {
+          "name": "client_token_account",
+          "docs": [
+            "Client's USDC token account (source of funds)"
+          ],
+          "writable": true
+        },
+        {
+          "name": "usdc_mint",
+          "docs": [
+            "USDC mint (or any SPL token mint)"
+          ]
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "channel_id",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "initial_deposit",
+          "type": "u64"
+        },
+        {
+          "name": "expiry",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "resolve_dispute",
+      "docs": [
+        "Resolve a disputed channel",
+        "BUG FIX 5: Provides manual dispute resolution mechanism",
+        "Allows an authorized resolver (multisig) to settle disputed channels",
+        "",
+        "# Arguments",
+        "* `to_client` - Amount to transfer to client",
+        "* `to_server` - Amount to transfer to server",
+        "",
+        "# Security",
+        "- Only works on disputed channels",
+        "- Amounts must sum to available balance",
+        "- Requires authority signature (should be multisig in production)"
+      ],
+      "discriminator": [
+        231,
+        6,
+        202,
+        6,
+        96,
+        103,
+        12,
+        230
+      ],
+      "accounts": [
+        {
+          "name": "channel",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  104,
+                  97,
+                  110,
+                  110,
+                  101,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "channel.channel_id",
+                "account": "PaymentChannel"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "docs": [
+            "Authority that can resolve disputes (should be multisig)"
+          ],
+          "signer": true
+        },
+        {
+          "name": "channel_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  104,
+                  97,
+                  110,
+                  110,
+                  101,
+                  108,
+                  95,
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "channel.channel_id",
+                "account": "PaymentChannel"
+              }
+            ]
+          }
+        },
+        {
+          "name": "client_token_account",
+          "writable": true
+        },
+        {
+          "name": "server_token_account",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "to_client",
+          "type": "u64"
+        },
+        {
+          "name": "to_server",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "PaymentChannel",
+      "discriminator": [
+        53,
+        102,
+        116,
+        128,
+        150,
+        23,
+        170,
+        138
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "ChannelClosed",
+      "discriminator": [
+        119,
+        198,
+        23,
+        254,
+        216,
+        124,
+        84,
+        16
+      ]
+    },
+    {
+      "name": "ChannelDisputeClosed",
+      "discriminator": [
+        199,
+        81,
+        255,
+        108,
+        111,
+        26,
+        54,
+        237
+      ]
+    },
+    {
+      "name": "ChannelOpened",
+      "discriminator": [
+        253,
+        213,
+        255,
+        96,
+        31,
+        188,
+        47,
+        170
+      ]
+    },
+    {
+      "name": "DisputeInitiated",
+      "discriminator": [
+        150,
+        109,
+        93,
+        252,
+        198,
+        4,
+        183,
+        153
+      ]
+    },
+    {
+      "name": "DisputeResolved",
+      "discriminator": [
+        121,
+        64,
+        249,
+        153,
+        139,
+        128,
+        236,
+        187
+      ]
+    },
+    {
+      "name": "FundsAdded",
+      "discriminator": [
+        87,
+        171,
+        7,
+        127,
+        147,
+        121,
+        99,
+        75
+      ]
+    },
+    {
+      "name": "PaymentClaimed",
+      "discriminator": [
+        238,
+        86,
+        136,
+        254,
+        229,
+        217,
+        63,
+        80
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidExpiry",
+      "msg": "Invalid channel expiry time - must be in the future"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidDeposit",
+      "msg": "Invalid deposit amount - must be greater than zero"
+    },
+    {
+      "code": 6002,
+      "name": "ChannelClosed",
+      "msg": "Channel is closed - no operations allowed"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidNonce",
+      "msg": "Invalid nonce - must be greater than current nonce"
+    },
+    {
+      "code": 6004,
+      "name": "InsufficientFunds",
+      "msg": "Insufficient funds in channel for this operation"
+    },
+    {
+      "code": 6005,
+      "name": "CannotClose",
+      "msg": "Cannot close channel - not expired and not fully settled"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidSignature",
+      "msg": "Invalid signature - signature verification failed"
+    },
+    {
+      "code": 6007,
+      "name": "UnauthorizedAccess",
+      "msg": "Unauthorized access - you are not allowed to perform this operation"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidAmount",
+      "msg": "Invalid amount - arithmetic error or negative result"
+    },
+    {
+      "code": 6009,
+      "name": "InvalidMint",
+      "msg": "Invalid mint - token mint does not match expected mint"
+    },
+    {
+      "code": 6010,
+      "name": "ChannelExpired",
+      "msg": "Channel is expired - cannot perform this operation"
+    },
+    {
+      "code": 6011,
+      "name": "ArithmeticOverflow",
+      "msg": "Arithmetic overflow occurred"
+    },
+    {
+      "code": 6012,
+      "name": "NonceIncrementTooLarge",
+      "msg": "Nonce increment is too large - maximum 10,000 allowed"
+    },
+    {
+      "code": 6013,
+      "name": "DepositTooSmall",
+      "msg": "Deposit amount is below minimum required (1 USDC)"
+    },
+    {
+      "code": 6014,
+      "name": "ChannelNotDisputed",
+      "msg": "Channel is not in disputed state"
+    },
+    {
+      "code": 6015,
+      "name": "InvalidResolution",
+      "msg": "Invalid dispute resolution - amounts must sum to available balance"
+    }
+  ],
+  "types": [
+    {
+      "name": "ChannelClosed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "channel_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "remaining_returned",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ChannelDisputeClosed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "channel_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "to_server",
+            "type": "u64"
+          },
+          {
+            "name": "to_client",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ChannelOpened",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "channel_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "client",
+            "type": "pubkey"
+          },
+          {
+            "name": "server",
+            "type": "pubkey"
+          },
+          {
+            "name": "deposit",
+            "type": "u64"
+          },
+          {
+            "name": "expiry",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ChannelStatus",
+      "docs": [
+        "Channel status enum"
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Open"
+          },
+          {
+            "name": "Closed"
+          },
+          {
+            "name": "Disputed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DisputeInitiated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "channel_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "disputer",
+            "type": "pubkey"
+          },
+          {
+            "name": "reason",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DisputeResolved",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "channel_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "to_client",
+            "type": "u64"
+          },
+          {
+            "name": "to_server",
+            "type": "u64"
+          },
+          {
+            "name": "resolver",
+            "type": "pubkey"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FundsAdded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "channel_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "new_balance",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PaymentChannel",
+      "docs": [
+        "Payment channel state",
+        "Stores all information about an open payment channel between client and server"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "channel_id",
+            "docs": [
+              "Unique identifier for this channel"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "client",
+            "docs": [
+              "Client's public key (the one funding the channel)"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "server",
+            "docs": [
+              "Server's public key (the one receiving payments)"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "client_deposit",
+            "docs": [
+              "Total amount deposited by client (in micro-tokens, e.g., micro-USDC)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "server_claimed",
+            "docs": [
+              "Total amount claimed by server on-chain so far"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "nonce",
+            "docs": [
+              "Monotonic nonce for replay protection",
+              "Each new off-chain payment must have a higher nonce"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "expiry",
+            "docs": [
+              "Unix timestamp when channel expires and can be closed"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "status",
+            "docs": [
+              "Current status of the channel"
+            ],
+            "type": {
+              "defined": {
+                "name": "ChannelStatus"
+              }
+            }
+          },
+          {
+            "name": "created_at",
+            "docs": [
+              "Unix timestamp when channel was created"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "last_update",
+            "docs": [
+              "Unix timestamp of last state update"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "Bump seed for PDA derivation"
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PaymentClaimed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "channel_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "total_claimed",
+            "type": "u64"
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "remaining",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}

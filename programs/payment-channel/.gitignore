@@ -1,0 +1,27 @@
+# Anchor
+.anchor
+target/
+node_modules/
+test-ledger/
+
+# Build artifacts
+*.so
+*.d
+*.rlib
+
+# IDL
+target/idl/
+target/types/
+
+# Test artifacts
+.DS_Store
+*.log
+
+# Keypairs (never commit!)
+**/keypair*.json
+**/id.json
+**/.keypair
+
+# Environment
+.env
+.env.local
