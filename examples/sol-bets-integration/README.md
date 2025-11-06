@@ -456,6 +456,6 @@ If your endpoint costs $0.0001 per request:
 ## Support
 
 For issues or questions:
-- GitHub Issues: [x402-payment-channels/issues](https://github.com/your-org/x402-payment-channels/issues)
+- GitHub Issues: [x402-payment-channels/issues](https://github.com/BOBER3r/x402-payment-channels/issues)
 - Documentation: [Full docs](/README.md)
 - Examples: [More examples](/examples)

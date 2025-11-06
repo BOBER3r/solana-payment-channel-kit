@@ -47,7 +47,7 @@ This monorepo provides a complete payment channels solution for the x402 payment
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/x402-payment-channels.git
+git clone https://github.com/BOBER3r/x402-payment-channels.git
 cd x402-payment-channels
 
 # Install dependencies (uses pnpm workspaces)
@@ -573,7 +573,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ## 🙏 Acknowledgments
 
 - Built on [Anchor](https://www.anchor-lang.com/) framework
-- Integrates with [x402 protocol](https://github.com/your-org/x402-solana-toolkit)
+- Integrates with [x402 protocol](https://github.com/BOBER3r/x402-solana-toolkit)
 - Inspired by Bitcoin Lightning Network
 - Optimized for Solana's high-performance blockchain
 
@@ -581,7 +581,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 - **Documentation**: [Full docs](README.md)
 - **Examples**: [Complete examples](examples/)
-- **Issues**: [GitHub Issues](https://github.com/your-org/x402-payment-channels/issues)
+- **Issues**: [GitHub Issues](https://github.com/BOBER3r/x402-payment-channels/issues)
 - **Discord**: [Join our community](#)
 
 ---
