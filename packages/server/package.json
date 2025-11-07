@@ -1,5 +1,5 @@
 {
-  "name": "@bober3r/solana-payment-channels-server",
+  "name": "@solana-payment-channel/server",
   "version": "0.1.0",
   "description": "Server-side middleware and integrations for x402 payment channels on Solana (Express, NestJS, Fastify)",
   "main": "./dist/index.js",
@@ -65,7 +65,7 @@
   "homepage": "https://github.com/BOBER3r/solana-payment-channel-kit#readme",
   "dependencies": {
     "@solana/web3.js": "^1.95.8",
-    "@bober3r/solana-payment-channels-core": "workspace:*",
+    "@solana-payment-channel/core": "workspace:*",
     "@x402-solana/server": "latest"
   },
   "peerDependencies": {

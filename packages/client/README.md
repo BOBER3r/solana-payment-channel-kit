@@ -1,7 +1,7 @@
-# @bober3r/solana-payment-channels-client
+# @solana-payment-channel/client
 
-[![npm version](https://badge.fury.io/js/%40bober3r%2Fsolana-payment-channels-client.svg)](https://www.npmjs.com/package/@bober3r/solana-payment-channels-client)
-[![npm downloads](https://img.shields.io/npm/dm/%40bober3r%2Fsolana-payment-channels-client.svg)](https://www.npmjs.com/package/@bober3r/solana-payment-channels-client)
+[![npm version](https://badge.fury.io/js/%40solana-payment-channel%2Fclient.svg)](https://www.npmjs.com/package/@solana-payment-channel/client)
+[![npm downloads](https://img.shields.io/npm/dm/%40solana-payment-channel%2Fclient.svg)](https://www.npmjs.com/package/@solana-payment-channel/client)
 [![GitHub issues](https://img.shields.io/github/issues/BOBER3r/solana-payment-channel-kit)](https://github.com/BOBER3r/solana-payment-channel-kit/issues)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
@@ -25,11 +25,11 @@ A production-ready client SDK that seamlessly handles payment channels and falls
 ## Installation
 
 ```bash
-npm install @bober3r/solana-payment-channels-client @bober3r/solana-payment-channels-core @solana/web3.js
+npm install @solana-payment-channel/client @bober3r/solana-payment-channels-core @solana/web3.js
 # or
-yarn add @bober3r/solana-payment-channels-client @bober3r/solana-payment-channels-core @solana/web3.js
+yarn add @solana-payment-channel/client @bober3r/solana-payment-channels-core @solana/web3.js
 # or
-pnpm add @bober3r/solana-payment-channels-client @bober3r/solana-payment-channels-core @solana/web3.js
+pnpm add @solana-payment-channel/client @bober3r/solana-payment-channels-core @solana/web3.js
 ```
 
 ## Quick Start (5 Minutes)
@@ -37,7 +37,7 @@ pnpm add @bober3r/solana-payment-channels-client @bober3r/solana-payment-channel
 ### 1. Initialize the Client
 
 ```typescript
-import { createClient } from '@bober3r/solana-payment-channels-client';
+import { createClient } from '@solana-payment-channel/client';
 import { Keypair } from '@solana/web3.js';
 
 // Load your wallet (from env, file, or generate)
@@ -78,7 +78,7 @@ Your application now supports automatic payment channels with zero additional co
 ### Simple API Calls
 
 ```typescript
-import { createClient } from '@bober3r/solana-payment-channels-client';
+import { createClient } from '@solana-payment-channel/client';
 
 const client = createClient({ wallet, rpcUrl, network: 'devnet' });
 
@@ -129,7 +129,7 @@ try {
 ### Basic Configuration
 
 ```typescript
-import { createClient } from '@bober3r/solana-payment-channels-client';
+import { createClient } from '@solana-payment-channel/client';
 
 const client = createClient({
   // Required
@@ -158,7 +158,7 @@ const client = createClient({
 ### Advanced Configuration
 
 ```typescript
-import { createClient } from '@bober3r/solana-payment-channels-client';
+import { createClient } from '@solana-payment-channel/client';
 import { PublicKey } from '@solana/web3.js';
 
 const client = createClient({
@@ -340,7 +340,7 @@ client.on('capabilities_detected', ({ serverUrl, capabilities }) => {
 ### Complete Event Monitoring Example
 
 ```typescript
-import { createClient } from '@bober3r/solana-payment-channels-client';
+import { createClient } from '@solana-payment-channel/client';
 
 const client = createClient({ wallet, rpcUrl, network: 'devnet' });
 
@@ -414,7 +414,7 @@ for (const [domain, stats] of analytics.domainStats) {
 ### Cost Analysis
 
 ```typescript
-import { AutoPaymentManager } from '@bober3r/solana-payment-channels-client';
+import { AutoPaymentManager } from '@solana-payment-channel/client';
 
 // Get the auto-payment manager for advanced analytics
 const manager = new AutoPaymentManager();

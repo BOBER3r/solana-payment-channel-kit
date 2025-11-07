@@ -1,5 +1,5 @@
 {
-  "name": "@bober3r/solana-payment-channels-core",
+  "name": "@solana-payment-channel/core",
   "version": "0.1.0",
   "description": "Core payment channel logic with x402 protocol integration for Solana",
   "main": "./dist/index.js",

@@ -1,5 +1,5 @@
 {
-  "name": "@bober3r/solana-payment-channels-client",
+  "name": "@solana-payment-channel/client",
   "version": "0.1.0",
   "description": "Client SDK for automatic payment channel management with x402 protocol on Solana",
   "main": "./dist/index.js",
@@ -47,7 +47,7 @@
   },
   "homepage": "https://github.com/BOBER3r/solana-payment-channel-kit#readme",
   "dependencies": {
-    "@bober3r/solana-payment-channels-core": "workspace:*",
+    "@solana-payment-channel/core": "workspace:*",
     "@x402-solana/client": "latest",
     "@solana/web3.js": "^1.95.8",
     "@solana/spl-token": "^0.4.11",

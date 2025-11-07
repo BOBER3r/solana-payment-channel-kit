@@ -1,7 +1,7 @@
-# @bober3r/solana-payment-channels-server
+# @solana-payment-channel/server
 
-[![npm version](https://badge.fury.io/js/%40bober3r%2Fsolana-payment-channels-server.svg)](https://www.npmjs.com/package/@bober3r/solana-payment-channels-server)
-[![npm downloads](https://img.shields.io/npm/dm/%40bober3r%2Fsolana-payment-channels-server.svg)](https://www.npmjs.com/package/@bober3r/solana-payment-channels-server)
+[![npm version](https://badge.fury.io/js/%40solana-payment-channel%2Fserver.svg)](https://www.npmjs.com/package/@solana-payment-channel/server)
+[![npm downloads](https://img.shields.io/npm/dm/%40solana-payment-channel%2Fserver.svg)](https://www.npmjs.com/package/@solana-payment-channel/server)
 [![GitHub issues](https://img.shields.io/github/issues/BOBER3r/solana-payment-channel-kit)](https://github.com/BOBER3r/solana-payment-channel-kit/issues)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
@@ -663,6 +663,6 @@ See [CONTRIBUTING.md](../../CONTRIBUTING.md) for details.
 
 ## Support
 
-- GitHub Issues: https://github.com/BOBER3r/x402-payment-channels/issues
+- GitHub Issues: https://github.com/BOBER3r/solana-payment-channel-kit/issues
 - Documentation: https://docs.x402.dev
 - Discord: https://discord.gg/x402

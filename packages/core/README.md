@@ -1,7 +1,7 @@
-# @bober3r/solana-payment-channels-core
+# @solana-payment-channel/core
 
-[![npm version](https://badge.fury.io/js/%40bober3r%2Fsolana-payment-channels-core.svg)](https://www.npmjs.com/package/@bober3r/solana-payment-channels-core)
-[![npm downloads](https://img.shields.io/npm/dm/%40bober3r%2Fsolana-payment-channels-core.svg)](https://www.npmjs.com/package/@bober3r/solana-payment-channels-core)
+[![npm version](https://badge.fury.io/js/%40solana-payment-channel%2Fcore.svg)](https://www.npmjs.com/package/@solana-payment-channel/core)
+[![npm downloads](https://img.shields.io/npm/dm/%40solana-payment-channel%2Fcore.svg)](https://www.npmjs.com/package/@solana-payment-channel/core)
 [![GitHub issues](https://img.shields.io/github/issues/BOBER3r/solana-payment-channel-kit)](https://github.com/BOBER3r/solana-payment-channel-kit/issues)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
@@ -21,13 +21,13 @@ Core payment channel management for Solana with seamless x402 protocol integrati
 ## Installation
 
 ```bash
-npm install @bober3r/solana-payment-channels-core @solana/web3.js @coral-xyz/anchor
+npm install @solana-payment-channel/core @solana/web3.js @coral-xyz/anchor
 ```
 
 ## Quick Start
 
 ```typescript
-import { ChannelManager, createChannelConfig } from '@bober3r/solana-payment-channels-core';
+import { ChannelManager, createChannelConfig } from '@solana-payment-channel/core';
 import { Keypair, PublicKey } from '@solana/web3.js';
 
 // Initialize configuration
@@ -43,7 +43,7 @@ const channelId = await manager.openChannel({
 });
 
 // Create payment authorization (client-side)
-import { createPaymentAuthorization } from '@bober3r/solana-payment-channels-core';
+import { createPaymentAuthorization } from '@solana-payment-channel/core';
 
 const authorization = await createPaymentAuthorization(
   Buffer.from(channelId, 'hex'),
@@ -93,7 +93,7 @@ console.log('Remaining balance:', result.remainingBalance);
 The package seamlessly integrates with the x402 protocol for fallback payments:
 
 ```typescript
-import { ChannelManager, FallbackManager } from '@bober3r/solana-payment-channels-core';
+import { ChannelManager, FallbackManager } from '@solana-payment-channel/core';
 
 const manager = new ChannelManager(config, wallet);
 const fallback = manager.getFallbackManager();
@@ -311,7 +311,7 @@ import {
   InvalidNonceError,
   TransactionError,
   ConfigurationError,
-} from '@bober3r/solana-payment-channels-core';
+} from '@solana-payment-channel/core';
 
 try {
   await manager.claimPayment(channelId, options);
@@ -345,7 +345,7 @@ interface ChannelConfig {
 ### Helper Function
 
 ```typescript
-import { createChannelConfig, NETWORKS } from '@bober3r/solana-payment-channels-core';
+import { createChannelConfig, NETWORKS } from '@solana-payment-channel/core';
 
 const config = createChannelConfig('devnet', programId, {
   defaultExpiry: 14 * 24 * 60 * 60, // 14 days
@@ -358,7 +358,7 @@ const config = createChannelConfig('devnet', programId, {
 ### Client: Opening a Channel
 
 ```typescript
-import { ChannelManager } from '@bober3r/solana-payment-channels-core';
+import { ChannelManager } from '@solana-payment-channel/core';
 import { Keypair } from '@solana/web3.js';
 
 const client = Keypair.generate();
@@ -375,7 +375,7 @@ console.log('Channel opened:', channelId);
 ### Client: Creating Payment Authorization
 
 ```typescript
-import { createPaymentAuthorization } from '@bober3r/solana-payment-channels-core';
+import { createPaymentAuthorization } from '@solana-payment-channel/core';
 
 const state = await manager.getChannelState(channelId);
 const nextNonce = state.nonce + BigInt(1);
@@ -398,7 +398,7 @@ await fetch(serverUrl, {
 ### Server: Processing Payment
 
 ```typescript
-import { ChannelManager, verifyPaymentAuthorization } from '@bober3r/solana-payment-channels-core';
+import { ChannelManager, verifyPaymentAuthorization } from '@solana-payment-channel/core';
 
 // Receive authorization from client
 const { authorization } = await request.json();
