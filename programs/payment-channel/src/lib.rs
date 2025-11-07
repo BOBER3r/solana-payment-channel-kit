@@ -228,6 +228,7 @@ pub mod payment_channel {
     /// - Can only close if expired OR client has no remaining balance
     /// - Remaining funds always go back to client
     /// - Channel is marked as Closed to prevent further operations
+    /// - Closes both accounts and returns rent to client (rent reclamation)
     pub fn close_channel(ctx: Context<CloseChannel>) -> Result<()> {
         let channel = &mut ctx.accounts.channel;
         let clock = Clock::get()?;
@@ -272,6 +273,15 @@ pub mod payment_channel {
             channel_id: channel.channel_id,
             remaining_returned: remaining,
         });
+
+        // Close token account and return rent to client
+        // This reclaims the 1,148,400 lamports (0.001148 SOL) rent
+        let token_account_info = ctx.accounts.channel_token_account.to_account_info();
+        let client_info = ctx.accounts.closer.to_account_info();
+
+        // Transfer token account lamports to client
+        **client_info.try_borrow_mut_lamports()? += token_account_info.lamports();
+        **token_account_info.try_borrow_mut_lamports()? = 0;
 
         Ok(())
     }
@@ -613,6 +623,7 @@ pub struct CloseChannel<'info> {
         mut,
         seeds = [b"channel", channel.channel_id.as_ref()],
         bump = channel.bump,
+        close = closer
     )]
     pub channel: Account<'info, PaymentChannel>,
 
