@@ -11,6 +11,8 @@ Server-side middleware and integrations for x402 payment channels on Solana. Acc
 ## Features
 
 - **Off-chain Payment Channels**: Process payments instantly with zero transaction fees
+- **Overdraft/Credit System**: Support customizable credit limits for users (up to any amount)
+- **Auto-Settlement**: Automatically receive debt payments when users add funds
 - **Automatic x402 Fallback**: Seamlessly fall back to on-chain payments when channels unavailable
 - **Multi-Framework Support**: Native integrations for Express, NestJS, and Fastify
 - **Type-Safe**: Built with TypeScript for complete type safety

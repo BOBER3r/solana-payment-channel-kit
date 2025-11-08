@@ -298,17 +298,6 @@ export async function sendAddFundsTransaction(
     channelAccount.server
   );
 
-  console.log(`[DEBUG] Server pubkey: ${channelAccount.server.toBase58()}`);
-  console.log(`[DEBUG] Server token account: ${serverTokenAccount.toBase58()}`);
-
-  // Verify the account exists and is valid
-  try {
-    const serverTokenAccountInfo = await getAccount(config.connection, serverTokenAccount);
-    console.log(`[DEBUG] Server token account owner: ${serverTokenAccountInfo.owner.toBase58()}`);
-  } catch (error) {
-    throw new Error(`Server token account does not exist: ${serverTokenAccount.toBase58()}`);
-  }
-
   // Use PDA for channel token account
   const [channelTokenAccount] = getChannelTokenAccount(channelId, config.programId);
 

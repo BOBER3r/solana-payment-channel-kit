@@ -13,6 +13,8 @@ A production-ready client SDK that seamlessly handles payment channels and falls
 ## Features
 
 - **🔄 Drop-in Replacement**: Works exactly like `fetch()` but handles payments automatically
+- **💳 Overdraft/Credit Limit**: Set customizable credit limits (up to any amount) for users
+- **🔄 Auto-Settlement**: Automatically pays off debt when funds are added
 - **🧠 Intelligent Routing**: Automatically chooses between channel and x402 based on usage patterns
 - **⚡️ Zero Configuration**: Works out-of-the-box with sensible defaults
 - **🎛️ Full Control**: Advanced users can manage channels manually
@@ -140,6 +142,7 @@ const client = createClient({
   // Optional - Channel Management
   channelThreshold: 10,           // Open channel after N req/hour (default: 10)
   defaultChannelDeposit: BigInt(10_000_000), // 10 USDC (default)
+  defaultCreditLimit: BigInt(0),  // Credit limit - 0 = no overdraft (default)
   autoRefillThreshold: BigInt(1_000_000),    // Refill at 1 USDC (default)
   autoRefillAmount: BigInt(10_000_000),      // Refill with 10 USDC (default)
   channelExpiry: 7 * 24 * 60 * 60,          // 7 days (default)
@@ -200,10 +203,12 @@ For advanced use cases, you can manage channels manually:
 // Open a channel for a specific server
 const channelId = await client.openChannel(
   'https://api.example.com',
-  BigInt(10_000_000), // 10 USDC deposit
+  BigInt(10_000_000),  // 10 USDC deposit
+  BigInt(5_000_000),   // 5 USDC credit limit (optional)
 );
 
 console.log(`Channel opened: ${channelId}`);
+console.log('Total spendable: 15 USDC (10 deposit + 5 credit)');
 
 // Now all requests to this server use the channel
 const response = await client.fetch('https://api.example.com/data');

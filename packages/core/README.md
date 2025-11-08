@@ -11,6 +11,8 @@ Core payment channel management for Solana with seamless x402 protocol integrati
 ## Features
 
 - **Off-chain Payments**: Process payments instantly without blockchain transactions
+- **Overdraft/Credit Limit**: Allow users to spend more than their deposit with customizable credit limits (up to any amount)
+- **Auto-Settlement**: Automatically pays off debt when funds are added to the channel
 - **Cryptographic Security**: Ed25519 signatures for payment authorization
 - **State Management**: Efficient in-memory caching with TTL
 - **Automatic Fallback**: Seamlessly falls back to x402 protocol when channels unavailable
@@ -36,10 +38,11 @@ const config = createChannelConfig('devnet', 'YOUR_PROGRAM_ID');
 // Create channel manager
 const manager = new ChannelManager(config, clientKeypair);
 
-// Open a payment channel
+// Open a payment channel with optional credit limit
 const channelId = await manager.openChannel({
   serverPubkey: new PublicKey('SERVER_PUBLIC_KEY'),
   initialDeposit: BigInt(10_000_000), // 10 USDC
+  creditLimit: BigInt(5_000_000),     // 5 USDC credit (optional)
 });
 
 // Create payment authorization (client-side)
@@ -61,6 +64,74 @@ const result = await manager.claimPayment(channelId, {
 console.log('Payment claimed:', result.success);
 console.log('Remaining balance:', result.remainingBalance);
 ```
+
+## Overdraft/Credit Limit Feature
+
+Payment channels support customizable credit limits, allowing users to spend more than their initial deposit. This is perfect for applications that need to provide temporary credit to users.
+
+### How It Works
+
+When opening a channel, you can specify a `creditLimit` that determines how much the user can overdraft:
+
+```typescript
+const channelId = await manager.openChannel({
+  serverPubkey: serverPublicKey,
+  initialDeposit: BigInt(100_000_000),   // 100 USDC deposited
+  creditLimit: BigInt(1000_000_000),     // 1000 USDC credit limit
+});
+
+// User can now spend up to 1,100 USDC total (100 deposit + 1000 credit)
+```
+
+### Credit Limit Examples
+
+- **No overdraft**: `creditLimit: BigInt(0)` - User can only spend their deposit
+- **50% overdraft**: Deposit 100 USDC, credit 50 USDC - Can spend 150 USDC total
+- **High credit**: Deposit 100 USDC, credit 1000 USDC - Can spend 1,100 USDC total
+- **Unlimited** (up to u64 max): Set any credit limit your business model allows
+
+### Auto-Settlement
+
+When a user goes into debt and later adds funds to the channel, the system automatically:
+
+1. **Pays off debt first**: Debt is transferred directly to the server
+2. **Adds remaining to balance**: Net deposit goes to the channel
+
+```typescript
+// Channel state after overdraft:
+// - Deposited: 100 USDC
+// - Claimed: 120 USDC
+// - Debt: 20 USDC
+
+// User adds 50 USDC to channel
+await manager.addFunds(channelId, BigInt(50_000_000));
+
+// Auto-settlement:
+// - 20 USDC pays off debt (sent directly to server)
+// - 30 USDC added to channel balance
+// - Debt: 0 USDC
+```
+
+### Debt Protection
+
+Channels with outstanding debt cannot be closed until the debt is settled:
+
+```typescript
+try {
+  await manager.closeChannel(channelId); // Has 20 USDC debt
+} catch (error) {
+  // Error: CannotCloseWithDebt
+  // User must add funds to settle debt first
+}
+```
+
+### Use Cases
+
+- **Gaming**: Allow players temporary credit for in-game purchases
+- **Subscriptions**: Prevent service interruption during payment processing
+- **B2B Services**: Provide business customers with credit terms
+- **Trial Periods**: Offer limited credit during trial periods
+- **Loyalty Programs**: Reward high-value users with higher credit limits
 
 ## Architecture
 
@@ -142,6 +213,7 @@ async openChannel(options: OpenChannelOptions): Promise<string>
 **Parameters:**
 - `options.serverPubkey`: Server's public key
 - `options.initialDeposit`: Initial deposit amount in smallest units
+- `options.creditLimit?`: Optional credit limit (defaults to 0, no overdraft)
 - `options.expiry?`: Optional expiry date (defaults to 7 days)
 
 **Returns:** Channel ID as hex string
@@ -366,10 +438,12 @@ const manager = new ChannelManager(config, client);
 
 const channelId = await manager.openChannel({
   serverPubkey: serverPublicKey,
-  initialDeposit: BigInt(10_000_000), // 10 USDC
+  initialDeposit: BigInt(10_000_000),  // 10 USDC
+  creditLimit: BigInt(5_000_000),      // 5 USDC credit (optional)
 });
 
 console.log('Channel opened:', channelId);
+console.log('Total spendable: 15 USDC (10 deposit + 5 credit)');
 ```
 
 ### Client: Creating Payment Authorization

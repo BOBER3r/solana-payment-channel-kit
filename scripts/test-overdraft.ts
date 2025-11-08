@@ -50,14 +50,13 @@ async function main() {
   await sendAndConfirmTransaction(connection, fundTx, [clientKeypair]);
 
   const usdcMint = new PublicKey(TEST_USDC_MINT);
-  const serverTokenAccount = await spl.getOrCreateAssociatedTokenAccount(
+  await spl.getOrCreateAssociatedTokenAccount(
     connection,
     clientKeypair,
     usdcMint,
     serverKeypair.publicKey
   );
-  console.log('✅ Server ready');
-  console.log(`   Server token account: ${serverTokenAccount.address.toBase58()}\n`);
+  console.log('✅ Server ready\n');
 
   const config = {
     rpcUrl: DEVNET_RPC,

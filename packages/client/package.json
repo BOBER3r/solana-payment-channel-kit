@@ -1,6 +1,6 @@
 {
   "name": "@solana-payment-channel/client",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "Client SDK for automatic payment channel management with x402 protocol on Solana",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

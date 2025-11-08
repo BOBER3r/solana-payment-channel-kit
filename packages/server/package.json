@@ -1,6 +1,6 @@
 {
   "name": "@solana-payment-channel/server",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "Server-side middleware and integrations for x402 payment channels on Solana (Express, NestJS, Fastify)",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
