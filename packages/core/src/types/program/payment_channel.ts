@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/payment_channel.json`.
  */
 export type PaymentChannel = {
-  "address": "CEVo4h4qnZkJVgzahQ9XwYz7a8NuCWdFcoiYiX6mZS1t",
+  "address": "H8SsYx7Z8qp12AvaX8oEWDCHWo8JYmEK21zWLWcfW4Zc",
   "metadata": {
     "name": "paymentChannel",
     "version": "0.1.0",
@@ -250,7 +250,8 @@ export type PaymentChannel = {
         "# Security",
         "- Can only close if expired OR client has no remaining balance",
         "- Remaining funds always go back to client",
-        "- Channel is marked as Closed to prevent further operations"
+        "- Channel is marked as Closed to prevent further operations",
+        "- Closes both accounts and returns rent to client (rent reclamation)"
       ],
       "discriminator": [
         0,
@@ -677,6 +678,10 @@ export type PaymentChannel = {
         {
           "name": "expiry",
           "type": "i64"
+        },
+        {
+          "name": "creditLimit",
+          "type": "u64"
         }
       ]
     },
@@ -851,6 +856,32 @@ export type PaymentChannel = {
       ]
     },
     {
+      "name": "debtIncurred",
+      "discriminator": [
+        177,
+        246,
+        83,
+        93,
+        14,
+        158,
+        217,
+        138
+      ]
+    },
+    {
+      "name": "debtSettled",
+      "discriminator": [
+        97,
+        100,
+        219,
+        145,
+        25,
+        187,
+        48,
+        219
+      ]
+    },
+    {
       "name": "disputeInitiated",
       "discriminator": [
         150,
@@ -906,83 +937,33 @@ export type PaymentChannel = {
   "errors": [
     {
       "code": 6000,
-      "name": "invalidExpiry",
-      "msg": "Invalid channel expiry time - must be in the future"
+      "name": "missingEd25519Instruction",
+      "msg": "Ed25519 verification instruction not found - must be immediately before this instruction"
     },
     {
       "code": 6001,
-      "name": "invalidDeposit",
-      "msg": "Invalid deposit amount - must be greater than zero"
+      "name": "invalidEd25519Program",
+      "msg": "Invalid Ed25519 program ID - instruction must use Ed25519Program"
     },
     {
       "code": 6002,
-      "name": "channelClosed",
-      "msg": "Channel is closed - no operations allowed"
+      "name": "invalidEd25519Data",
+      "msg": "Invalid Ed25519 instruction data - malformed or insufficient data"
     },
     {
       "code": 6003,
-      "name": "invalidNonce",
-      "msg": "Invalid nonce - must be greater than current nonce"
+      "name": "signatureMismatch",
+      "msg": "Signature does not match expected value"
     },
     {
       "code": 6004,
-      "name": "insufficientFunds",
-      "msg": "Insufficient funds in channel for this operation"
+      "name": "publicKeyMismatch",
+      "msg": "Public key does not match expected value"
     },
     {
       "code": 6005,
-      "name": "cannotClose",
-      "msg": "Cannot close channel - not expired and not fully settled"
-    },
-    {
-      "code": 6006,
-      "name": "invalidSignature",
-      "msg": "Invalid signature - signature verification failed"
-    },
-    {
-      "code": 6007,
-      "name": "unauthorizedAccess",
-      "msg": "Unauthorized access - you are not allowed to perform this operation"
-    },
-    {
-      "code": 6008,
-      "name": "invalidAmount",
-      "msg": "Invalid amount - arithmetic error or negative result"
-    },
-    {
-      "code": 6009,
-      "name": "invalidMint",
-      "msg": "Invalid mint - token mint does not match expected mint"
-    },
-    {
-      "code": 6010,
-      "name": "channelExpired",
-      "msg": "Channel is expired - cannot perform this operation"
-    },
-    {
-      "code": 6011,
-      "name": "arithmeticOverflow",
-      "msg": "Arithmetic overflow occurred"
-    },
-    {
-      "code": 6012,
-      "name": "nonceIncrementTooLarge",
-      "msg": "Nonce increment is too large - maximum 10,000 allowed"
-    },
-    {
-      "code": 6013,
-      "name": "depositTooSmall",
-      "msg": "Deposit amount is below minimum required (1 USDC)"
-    },
-    {
-      "code": 6014,
-      "name": "channelNotDisputed",
-      "msg": "Channel is not in disputed state"
-    },
-    {
-      "code": 6015,
-      "name": "invalidResolution",
-      "msg": "Invalid dispute resolution - amounts must sum to available balance"
+      "name": "messageMismatch",
+      "msg": "Message does not match expected value"
     }
   ],
   "types": [
@@ -1061,6 +1042,10 @@ export type PaymentChannel = {
           {
             "name": "expiry",
             "type": "i64"
+          },
+          {
+            "name": "creditLimit",
+            "type": "u64"
           }
         ]
       }
@@ -1081,6 +1066,60 @@ export type PaymentChannel = {
           },
           {
             "name": "disputed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "debtIncurred",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "channelId",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "overdraftAmount",
+            "type": "u64"
+          },
+          {
+            "name": "totalDebt",
+            "type": "u64"
+          },
+          {
+            "name": "creditLimit",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "debtSettled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "channelId",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "amountSettled",
+            "type": "u64"
+          },
+          {
+            "name": "remainingDebt",
+            "type": "u64"
           }
         ]
       }
@@ -1159,6 +1198,18 @@ export type PaymentChannel = {
           },
           {
             "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "debtSettled",
+            "type": "u64"
+          },
+          {
+            "name": "netDeposit",
+            "type": "u64"
+          },
+          {
+            "name": "remainingDebt",
             "type": "u64"
           },
           {
@@ -1258,6 +1309,22 @@ export type PaymentChannel = {
             "type": "i64"
           },
           {
+            "name": "debtOwed",
+            "docs": [
+              "Amount client owes to server (overdraft/negative balance)",
+              "When client uses more than deposited, this tracks the debt"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "creditLimit",
+            "docs": [
+              "Maximum overdraft allowed (set by server at channel creation)",
+              "Server can set this based on client's credit history, tier, etc."
+            ],
+            "type": "u64"
+          },
+          {
             "name": "bump",
             "docs": [
               "Bump seed for PDA derivation"
@@ -1291,6 +1358,14 @@ export type PaymentChannel = {
           },
           {
             "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "overdraftIncurred",
+            "type": "u64"
+          },
+          {
+            "name": "remainingDebt",
             "type": "u64"
           },
           {

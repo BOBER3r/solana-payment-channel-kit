@@ -140,7 +140,8 @@ export class ChannelManager {
         channelIdBuffer,
         options.serverPubkey,
         options.initialDeposit,
-        expiry
+        expiry,
+        options.creditLimit || BigInt(0)
       );
 
       // Initialize channel state in cache
@@ -528,7 +529,8 @@ export class ChannelManager {
     channelId: Buffer,
     serverPubkey: PublicKey,
     deposit: bigint,
-    expiry: Date
+    expiry: Date,
+    creditLimit: bigint
   ): Promise<string> {
     const blockchainConfig: BlockchainConfig = {
       connection: this.connection,
@@ -543,7 +545,8 @@ export class ChannelManager {
       channelId,
       serverPubkey,
       deposit,
-      expiry
+      expiry,
+      creditLimit
     );
   }
 

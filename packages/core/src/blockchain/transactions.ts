@@ -218,7 +218,8 @@ export async function sendOpenChannelTransaction(
   channelId: Buffer,
   serverPubkey: PublicKey,
   deposit: bigint,
-  expiry: Date
+  expiry: Date,
+  creditLimit: bigint = BigInt(0)
 ): Promise<string> {
   const program = createProgramInstance(config.connection, wallet, config.programId);
 
@@ -237,10 +238,11 @@ export async function sendOpenChannelTransaction(
 
   const expiryTimestamp = new anchor.BN(Math.floor(expiry.getTime() / 1000));
   const depositAmount = new anchor.BN(deposit.toString());
+  const creditLimitAmount = new anchor.BN(creditLimit.toString());
 
   try {
     const signature = await program.methods
-      .openChannel(Array.from(channelId), depositAmount, expiryTimestamp)
+      .openChannel(Array.from(channelId), depositAmount, expiryTimestamp, creditLimitAmount)
       .accounts({
         channel: channelPDA,
         client: wallet.publicKey,
@@ -282,10 +284,30 @@ export async function sendAddFundsTransaction(
 
   const [channelPDA] = getChannelPDA(channelId, config.programId);
 
+  // Fetch channel to get server pubkey
+  const channelAccount = await program.account.paymentChannel.fetch(channelPDA);
+
   const clientTokenAccount = await getAssociatedTokenAddress(
     config.usdcMint,
     wallet.publicKey
   );
+
+  // Get server's token account (should already exist)
+  const serverTokenAccount = await getAssociatedTokenAddress(
+    config.usdcMint,
+    channelAccount.server
+  );
+
+  console.log(`[DEBUG] Server pubkey: ${channelAccount.server.toBase58()}`);
+  console.log(`[DEBUG] Server token account: ${serverTokenAccount.toBase58()}`);
+
+  // Verify the account exists and is valid
+  try {
+    const serverTokenAccountInfo = await getAccount(config.connection, serverTokenAccount);
+    console.log(`[DEBUG] Server token account owner: ${serverTokenAccountInfo.owner.toBase58()}`);
+  } catch (error) {
+    throw new Error(`Server token account does not exist: ${serverTokenAccount.toBase58()}`);
+  }
 
   // Use PDA for channel token account
   const [channelTokenAccount] = getChannelTokenAccount(channelId, config.programId);
@@ -297,9 +319,10 @@ export async function sendAddFundsTransaction(
       .addFunds(amountBN)
       .accounts({
         channel: channelPDA,
+        channelTokenAccount,
         client: wallet.publicKey,
         clientTokenAccount,
-        channelTokenAccount,
+        serverTokenAccount,
         tokenProgram: TOKEN_PROGRAM_ID,
       } as any)
       .signers([wallet])

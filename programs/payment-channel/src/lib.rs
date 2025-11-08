@@ -5,7 +5,7 @@ use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 mod message;
 mod verification;
 
-declare_id!("CEVo4h4qnZkJVgzahQ9XwYz7a8NuCWdFcoiYiX6mZS1t");
+declare_id!("H8SsYx7Z8qp12AvaX8oEWDCHWo8JYmEK21zWLWcfW4Zc");
 
 #[program]
 pub mod payment_channel {
@@ -28,18 +28,24 @@ pub mod payment_channel {
         channel_id: [u8; 32],
         initial_deposit: u64,
         expiry: i64,
+        credit_limit: u64,
     ) -> Result<()> {
         let channel = &mut ctx.accounts.channel;
         let clock = Clock::get()?;
 
         // BUG FIX 3: Add minimum deposit to prevent dust spam attacks
         const MINIMUM_DEPOSIT: u64 = 1_000_000; // 1 USDC (6 decimals)
+        const MAX_CREDIT_LIMIT: u64 = 1_000_000_000; // 1000 USDC max overdraft
 
         // Validate inputs
         require!(expiry > clock.unix_timestamp, ErrorCode::InvalidExpiry);
         require!(
             initial_deposit >= MINIMUM_DEPOSIT,
             ErrorCode::DepositTooSmall
+        );
+        require!(
+            credit_limit <= MAX_CREDIT_LIMIT,
+            ErrorCode::InvalidCreditLimit
         );
 
         // Initialize channel state
@@ -53,6 +59,8 @@ pub mod payment_channel {
         channel.status = ChannelStatus::Open;
         channel.created_at = clock.unix_timestamp;
         channel.last_update = clock.unix_timestamp;
+        channel.debt_owed = 0;
+        channel.credit_limit = credit_limit;
         channel.bump = ctx.bumps.channel;
 
         // Transfer USDC from client to channel escrow
@@ -71,6 +79,7 @@ pub mod payment_channel {
             server: ctx.accounts.server.key(),
             deposit: initial_deposit,
             expiry,
+            credit_limit,
         });
 
         Ok(())
@@ -94,27 +103,63 @@ pub mod payment_channel {
         );
         require!(amount > 0, ErrorCode::InvalidDeposit);
 
-        // BUG FIX 1: Use checked_add to prevent integer overflow
+        // OVERDRAFT FEATURE: Calculate debt payment and net deposit
+        let debt_payment = amount.min(channel.debt_owed);
+        let net_deposit = amount
+            .checked_sub(debt_payment)
+            .ok_or(ErrorCode::ArithmeticOverflow)?;
+
+        // Reduce debt
+        channel.debt_owed = channel
+            .debt_owed
+            .checked_sub(debt_payment)
+            .ok_or(ErrorCode::ArithmeticOverflow)?;
+
+        // Add FULL amount to client_deposit for accounting
         channel.client_deposit = channel
             .client_deposit
             .checked_add(amount)
             .ok_or(ErrorCode::ArithmeticOverflow)?;
+
         channel.last_update = Clock::get()?.unix_timestamp;
 
-        // Transfer additional USDC
-        let cpi_accounts = Transfer {
-            from: ctx.accounts.client_token_account.to_account_info(),
-            to: ctx.accounts.channel_token_account.to_account_info(),
-            authority: ctx.accounts.client.to_account_info(),
-        };
-        let cpi_program = ctx.accounts.token_program.to_account_info();
-        let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
-        token::transfer(cpi_ctx, amount)?;
+        // Transfer debt payment directly to server (if any)
+        if debt_payment > 0 {
+            let cpi_accounts = Transfer {
+                from: ctx.accounts.client_token_account.to_account_info(),
+                to: ctx.accounts.server_token_account.to_account_info(),
+                authority: ctx.accounts.client.to_account_info(),
+            };
+            let cpi_program = ctx.accounts.token_program.to_account_info();
+            let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
+            token::transfer(cpi_ctx, debt_payment)?;
+
+            emit!(DebtSettled {
+                channel_id: channel.channel_id,
+                amount_settled: debt_payment,
+                remaining_debt: channel.debt_owed,
+            });
+        }
+
+        // Transfer net deposit to channel token account (if any)
+        if net_deposit > 0 {
+            let cpi_accounts = Transfer {
+                from: ctx.accounts.client_token_account.to_account_info(),
+                to: ctx.accounts.channel_token_account.to_account_info(),
+                authority: ctx.accounts.client.to_account_info(),
+            };
+            let cpi_program = ctx.accounts.token_program.to_account_info();
+            let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
+            token::transfer(cpi_ctx, net_deposit)?;
+        }
 
         emit!(FundsAdded {
             channel_id: channel.channel_id,
             amount,
-            new_balance: channel.client_deposit - channel.server_claimed,
+            debt_settled: debt_payment,
+            net_deposit,
+            remaining_debt: channel.debt_owed,
+            new_balance: channel.client_deposit.saturating_sub(channel.server_claimed),
         });
 
         Ok(())
@@ -165,10 +210,6 @@ pub mod payment_channel {
             nonce_increment > 0 && nonce_increment <= MAX_NONCE_INCREMENT,
             ErrorCode::NonceIncrementTooLarge
         );
-        require!(
-            amount <= channel.client_deposit,
-            ErrorCode::InsufficientFunds
-        );
 
         // Verify client's signature using new message format with domain separator and expiry
         // Message format: domain_separator || channel_pda || server || amount || nonce || expiry
@@ -192,30 +233,74 @@ pub mod payment_channel {
             .checked_sub(channel.server_claimed)
             .ok_or(ErrorCode::InvalidAmount)?;
 
+        // OVERDRAFT FEATURE: Check if going into overdraft
+        let available = channel
+            .client_deposit
+            .checked_sub(channel.server_claimed)
+            .ok_or(ErrorCode::ArithmeticOverflow)?;
+
+        let (actual_transfer, overdraft_incurred) = if claim_amount > available {
+            // Going into overdraft
+            let overdraft = claim_amount
+                .checked_sub(available)
+                .ok_or(ErrorCode::ArithmeticOverflow)?;
+
+            // Check credit limit
+            let new_debt = channel
+                .debt_owed
+                .checked_add(overdraft)
+                .ok_or(ErrorCode::ArithmeticOverflow)?;
+            require!(
+                new_debt <= channel.credit_limit,
+                ErrorCode::ExceedsCreditLimit
+            );
+
+            // Add to debt
+            channel.debt_owed = new_debt;
+
+            // Emit debt incurred event
+            emit!(DebtIncurred {
+                channel_id: channel.channel_id,
+                overdraft_amount: overdraft,
+                total_debt: new_debt,
+                credit_limit: channel.credit_limit,
+            });
+
+            // Transfer only available funds (if any)
+            (available, overdraft)
+        } else {
+            // Normal claim - no overdraft
+            (claim_amount, 0)
+        };
+
         // Update state before transfer
         channel.server_claimed = amount;
         channel.nonce = nonce;
         channel.last_update = Clock::get()?.unix_timestamp;
 
-        // Transfer USDC from channel escrow to server
-        let seeds = &[b"channel", channel.channel_id.as_ref(), &[channel.bump]];
-        let signer = &[&seeds[..]];
+        // Transfer USDC from channel escrow to server (only if there's something to transfer)
+        if actual_transfer > 0 {
+            let seeds = &[b"channel", channel.channel_id.as_ref(), &[channel.bump]];
+            let signer = &[&seeds[..]];
 
-        let cpi_accounts = Transfer {
-            from: ctx.accounts.channel_token_account.to_account_info(),
-            to: ctx.accounts.server_token_account.to_account_info(),
-            authority: channel.to_account_info(),
-        };
-        let cpi_program = ctx.accounts.token_program.to_account_info();
-        let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer);
-        token::transfer(cpi_ctx, claim_amount)?;
+            let cpi_accounts = Transfer {
+                from: ctx.accounts.channel_token_account.to_account_info(),
+                to: ctx.accounts.server_token_account.to_account_info(),
+                authority: channel.to_account_info(),
+            };
+            let cpi_program = ctx.accounts.token_program.to_account_info();
+            let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer);
+            token::transfer(cpi_ctx, actual_transfer)?;
+        }
 
         emit!(PaymentClaimed {
             channel_id: channel.channel_id,
             amount: claim_amount,
             total_claimed: amount,
             nonce,
-            remaining: channel.client_deposit - channel.server_claimed,
+            overdraft_incurred,
+            remaining_debt: channel.debt_owed,
+            remaining: channel.client_deposit.saturating_sub(channel.server_claimed),
         });
 
         Ok(())
@@ -235,21 +320,25 @@ pub mod payment_channel {
 
         // Determine if channel can be closed
         let is_expired = clock.unix_timestamp >= channel.expiry;
-        let is_fully_settled = channel.client_deposit == channel.server_claimed;
         let is_client = ctx.accounts.closer.key() == channel.client;
 
         // Allow closing if:
         // 1. Channel has expired (anyone can close)
-        // 2. Client is closing and channel is fully settled
+        // 2. Client is closing (can always get their remaining funds back)
+        // Note: Client can close anytime to reclaim unused funds
         require!(
-            is_expired || (is_client && is_fully_settled),
+            is_expired || is_client,
             ErrorCode::CannotClose
         );
 
-        let remaining = channel
-            .client_deposit
-            .checked_sub(channel.server_claimed)
-            .ok_or(ErrorCode::InvalidAmount)?;
+        // OVERDRAFT FEATURE: Cannot close with outstanding debt
+        require!(
+            channel.debt_owed == 0,
+            ErrorCode::CannotCloseWithDebt
+        );
+
+        // Calculate remaining balance (use saturating_sub to handle case where we're still paying back)
+        let remaining = channel.client_deposit.saturating_sub(channel.server_claimed);
 
         // Return remaining funds to client
         if remaining > 0 {
@@ -274,14 +363,19 @@ pub mod payment_channel {
             remaining_returned: remaining,
         });
 
-        // Close token account and return rent to client
-        // This reclaims the 1,148,400 lamports (0.001148 SOL) rent
-        let token_account_info = ctx.accounts.channel_token_account.to_account_info();
-        let client_info = ctx.accounts.closer.to_account_info();
+        // Close token account using SPL Token Program to reclaim rent
+        // This returns the ~0.002 SOL rent to the client
+        let seeds = &[b"channel", channel.channel_id.as_ref(), &[channel.bump]];
+        let signer = &[&seeds[..]];
 
-        // Transfer token account lamports to client
-        **client_info.try_borrow_mut_lamports()? += token_account_info.lamports();
-        **token_account_info.try_borrow_mut_lamports()? = 0;
+        let cpi_accounts = token::CloseAccount {
+            account: ctx.accounts.channel_token_account.to_account_info(),
+            destination: ctx.accounts.closer.to_account_info(),
+            authority: channel.to_account_info(),
+        };
+        let cpi_program = ctx.accounts.token_program.to_account_info();
+        let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer);
+        token::close_account(cpi_ctx)?;
 
         Ok(())
     }
@@ -584,6 +678,14 @@ pub struct AddFunds<'info> {
     )]
     pub client_token_account: Account<'info, TokenAccount>,
 
+    /// Server's token account (for debt payment)
+    #[account(
+        mut,
+        constraint = server_token_account.owner == channel.server @ ErrorCode::UnauthorizedAccess,
+        constraint = server_token_account.mint == client_token_account.mint @ ErrorCode::InvalidMint,
+    )]
+    pub server_token_account: Account<'info, TokenAccount>,
+
     pub token_program: Program<'info, Token>,
 }
 
@@ -768,16 +870,24 @@ pub struct PaymentChannel {
     /// Unix timestamp of last state update
     pub last_update: i64,
 
+    /// Amount client owes to server (overdraft/negative balance)
+    /// When client uses more than deposited, this tracks the debt
+    pub debt_owed: u64,
+
+    /// Maximum overdraft allowed (set by server at channel creation)
+    /// Server can set this based on client's credit history, tier, etc.
+    pub credit_limit: u64,
+
     /// Bump seed for PDA derivation
     pub bump: u8,
 }
 
 impl PaymentChannel {
     /// Size calculation for rent exemption
-    /// BUG FIX 4: ChannelStatus enum is 1 byte, not 2
-    /// 32 + 32 + 32 + 8 + 8 + 8 + 8 + 1 + 8 + 8 + 1 = 146 bytes
+    /// Updated for overdraft feature: added debt_owed (8) + credit_limit (8)
+    /// 32 + 32 + 32 + 8 + 8 + 8 + 8 + 1 + 8 + 8 + 8 + 8 + 1 = 162 bytes
     /// (Anchor adds 8-byte discriminator automatically)
-    pub const SIZE: usize = 32 + 32 + 32 + 8 + 8 + 8 + 8 + 1 + 8 + 8 + 1;
+    pub const SIZE: usize = 32 + 32 + 32 + 8 + 8 + 8 + 8 + 1 + 8 + 8 + 8 + 8 + 1;
 
     /// Calculate remaining balance in channel
     pub fn available_balance(&self) -> u64 {
@@ -817,12 +927,16 @@ pub struct ChannelOpened {
     pub server: Pubkey,
     pub deposit: u64,
     pub expiry: i64,
+    pub credit_limit: u64,
 }
 
 #[event]
 pub struct FundsAdded {
     pub channel_id: [u8; 32],
     pub amount: u64,
+    pub debt_settled: u64,
+    pub net_deposit: u64,
+    pub remaining_debt: u64,
     pub new_balance: u64,
 }
 
@@ -832,6 +946,8 @@ pub struct PaymentClaimed {
     pub amount: u64,
     pub total_claimed: u64,
     pub nonce: u64,
+    pub overdraft_incurred: u64,
+    pub remaining_debt: u64,
     pub remaining: u64,
 }
 
@@ -862,6 +978,21 @@ pub struct DisputeResolved {
     pub to_server: u64,
     pub resolver: Pubkey,
     pub timestamp: i64,
+}
+
+#[event]
+pub struct DebtIncurred {
+    pub channel_id: [u8; 32],
+    pub overdraft_amount: u64,
+    pub total_debt: u64,
+    pub credit_limit: u64,
+}
+
+#[event]
+pub struct DebtSettled {
+    pub channel_id: [u8; 32],
+    pub amount_settled: u64,
+    pub remaining_debt: u64,
 }
 
 // ==================== ERROR CODES ====================
@@ -915,6 +1046,15 @@ pub enum ErrorCode {
 
     #[msg("Invalid dispute resolution - amounts must sum to available balance")]
     InvalidResolution,
+
+    #[msg("Exceeds credit limit - overdraft would exceed maximum allowed")]
+    ExceedsCreditLimit,
+
+    #[msg("Cannot close channel with outstanding debt - pay off debt first")]
+    CannotCloseWithDebt,
+
+    #[msg("Invalid credit limit - cannot exceed maximum allowed")]
+    InvalidCreditLimit,
 }
 
 // ==================== HELPER FUNCTIONS ====================

@@ -79,6 +79,8 @@ export interface OpenChannelOptions {
   serverPubkey: PublicKey;
   initialDeposit: bigint;
   expiry?: Date;
+  /** Maximum overdraft allowed (default: 0 = no overdraft) */
+  creditLimit?: bigint;
 }
 
 /**
