@@ -1,4 +1,4 @@
-# x402 Payment Channels Monorepo
+# x402 Solana Payment Channels Monorepo
 
 **Production-grade payment channels implementation for the x402 protocol on Solana**
 
