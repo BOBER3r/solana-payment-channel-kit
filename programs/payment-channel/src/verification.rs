@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::{
     ed25519_program,
-    sysvar::instructions::{self, load_current_index_checked, load_instruction_at_checked},
+    sysvar::instructions::{load_current_index_checked, load_instruction_at_checked},
 };
 
 /// Verifies Ed25519 signature using instruction sysvar pattern

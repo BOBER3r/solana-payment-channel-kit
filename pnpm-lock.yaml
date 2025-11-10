@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@x402-solana/core':
+        specifier: 0.3.2
+        version: 0.3.2(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@5.0.10)
     devDependencies:
       '@types/chai':
         specifier: ^4.3.0
@@ -100,8 +104,8 @@ importers:
         specifier: ^2.1.0
         version: 2.3.0
       '@solana-payment-channel/core':
-        specifier: workspace:*
-        version: link:../core
+        specifier: ^0.2.2
+        version: 0.2.2(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@solana/spl-token':
         specifier: ^0.4.11
         version: 0.4.14(@solana/web3.js@1.98.4(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@5.0.10)
@@ -147,7 +151,7 @@ importers:
         version: 1.98.4(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@x402-solana/core':
         specifier: latest
-        version: 0.2.0(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@5.0.10)
+        version: 0.3.2(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@5.0.10)
       bn.js:
         specifier: ^5.2.1
         version: 5.2.2
@@ -177,14 +181,14 @@ importers:
   packages/server:
     dependencies:
       '@solana-payment-channel/core':
-        specifier: workspace:*
-        version: link:../core
+        specifier: ^0.2.2
+        version: 0.2.2(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@solana/web3.js':
         specifier: ^1.95.8
         version: 1.98.4(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@x402-solana/server':
         specifier: latest
-        version: 0.2.0(@nestjs/common@10.4.20(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@10.4.20)(bufferutil@4.0.9)(express@4.21.2)(fastify@5.6.1)(typescript@5.9.3)(utf-8-validate@5.0.10)
+        version: 0.2.1(@nestjs/common@10.4.20(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@10.4.20)(bufferutil@4.0.9)(express@4.21.2)(fastify@5.6.1)(typescript@5.9.3)(utf-8-validate@5.0.10)
     devDependencies:
       '@nestjs/common':
         specifier: ^10.4.20
@@ -862,6 +866,10 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@solana-payment-channel/core@0.2.2':
+    resolution: {integrity: sha512-30vgKx7yqIlxSlylXh9VMebcs5gSodYcE3RN96tgZqeclifW6a8o7py7iRmx+neV0PJph5inq/+A8AWPvdg18g==}
+    engines: {node: '>=18.0.0'}
+
   '@solana/buffer-layout-utils@0.2.0':
     resolution: {integrity: sha512-szG4sxgJGktbuZYDg2FfNmkMi0DYQoVjN2h7ta1W1hPrwzarcFLBq9UpX1UjNXsNpT9dn+chgprtWGioUAr4/g==}
     engines: {node: '>= 10'}
@@ -1141,8 +1149,11 @@ packages:
   '@x402-solana/core@0.2.0':
     resolution: {integrity: sha512-2kb6k5/z558NlUKeLbVb/JI04SCfShDyzPbILRGLn/S/6hpJTl2ZM8j9ejGFTpHLJHIgc0kw1TL/JWpAc1rytg==}
 
-  '@x402-solana/server@0.2.0':
-    resolution: {integrity: sha512-RNjSKtcYuHVO6E2kRhxgwuPSNDVJky4STBnYLLQ4DckffsY5hUCah3eUSIKCO3ZL/s/wRoZeGvjFZtVdUkJZHw==}
+  '@x402-solana/core@0.3.2':
+    resolution: {integrity: sha512-zzqUt8VqXE/mB4ULEN2p0v3jr6tbCDdmf22TzwhxO8fbP2QWxfH7f6WvkxCNgTxTyudFaaBIALfVPECYfmSDLA==}
+
+  '@x402-solana/server@0.2.1':
+    resolution: {integrity: sha512-+ClrZCxZKv24aRBEr+6bQ80EmWDQZCjWR6L9AGb/vNeUINx8KiUYrkerkZycJe0xmQBQKaE0MNEvTGF8zwyLCQ==}
     peerDependencies:
       '@nestjs/common': ^10.0.0
       '@nestjs/core': ^10.0.0
@@ -3454,6 +3465,24 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.52.5':
     optional: true
 
+  '@solana-payment-channel/core@0.2.2(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@coral-xyz/anchor': 0.31.1(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)
+      '@noble/ed25519': 2.3.0
+      '@noble/hashes': 1.8.0
+      '@solana/spl-token': 0.4.14(@solana/web3.js@1.98.4(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@5.0.10)
+      '@solana/web3.js': 1.98.4(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)
+      '@x402-solana/core': 0.3.2(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@5.0.10)
+      bn.js: 5.2.2
+      bs58: 6.0.0
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - fastestsmallesttextencoderdecoder
+      - supports-color
+      - typescript
+      - utf-8-validate
+
   '@solana/buffer-layout-utils@0.2.0(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@solana/buffer-layout': 4.0.1
@@ -3857,7 +3886,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@x402-solana/core@0.2.0(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@5.0.10)':
+  '@x402-solana/core@0.2.0(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@solana/spl-token': 0.3.11(@solana/web3.js@1.98.4(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@solana/web3.js': 1.98.4(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)
@@ -3871,11 +3900,26 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@x402-solana/server@0.2.0(@nestjs/common@10.4.20(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@10.4.20)(bufferutil@4.0.9)(express@4.21.2)(fastify@5.6.1)(typescript@5.9.3)(utf-8-validate@5.0.10)':
+  '@x402-solana/core@0.3.2(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@solana/spl-token': 0.3.11(@solana/web3.js@1.98.4(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@solana/web3.js': 1.98.4(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)
-      '@x402-solana/core': 0.2.0(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@5.0.10)
+      bs58: 5.0.0
+      ioredis: 5.8.2
+      tweetnacl: 1.0.3
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - fastestsmallesttextencoderdecoder
+      - supports-color
+      - typescript
+      - utf-8-validate
+
+  '@x402-solana/server@0.2.1(@nestjs/common@10.4.20(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@10.4.20)(bufferutil@4.0.9)(express@4.21.2)(fastify@5.6.1)(typescript@5.9.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@solana/spl-token': 0.3.11(@solana/web3.js@1.98.4(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@5.0.10)
+      '@solana/web3.js': 1.98.4(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)
+      '@x402-solana/core': 0.2.0(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)
       bs58: 5.0.0
       fastify-plugin: 4.5.1
     optionalDependencies:
@@ -3883,6 +3927,7 @@ snapshots:
       '@nestjs/core': 10.4.20(@nestjs/common@10.4.20(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@10.4.20)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       express: 4.21.2
       fastify: 5.6.1
+      ioredis: 5.8.2
     transitivePeerDependencies:
       - bufferutil
       - encoding

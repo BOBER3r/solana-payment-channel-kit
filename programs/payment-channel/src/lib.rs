@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::{ed25519_program, sysvar::instructions};
+use anchor_lang::solana_program::sysvar::instructions;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 
 mod message;
