@@ -1,6 +1,6 @@
 {
   "name": "@solana-payment-channel/core",
-  "version": "0.2.4",
+  "version": "0.2.7",
   "description": "Core payment channel logic with x402 protocol integration for Solana",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

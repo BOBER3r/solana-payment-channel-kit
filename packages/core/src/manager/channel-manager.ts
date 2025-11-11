@@ -344,6 +344,7 @@ export class ChannelManager {
    * @param latestAmount - Highest cumulative amount client authorized
    * @param latestNonce - Nonce of the latest authorization
    * @param latestSignature - Client's Ed25519 signature of the latest authorization
+   * @param expiry - Expiry timestamp used when creating the authorization signature
    * @returns Transaction signature
    *
    * @throws {ChannelNotFoundError} If channel doesn't exist
@@ -356,7 +357,8 @@ export class ChannelManager {
    *   channelId,
    *   BigInt(5_000_000),  // 5 USDC in micro-units
    *   BigInt(10),          // nonce 10
-   *   latestSignature      // signature from last authorization
+   *   latestSignature,     // signature from last authorization
+   *   BigInt(1234567890)   // expiry used when signing
    * );
    * console.log('Channel closed:', signature);
    * ```
@@ -365,7 +367,8 @@ export class ChannelManager {
     channelId: string,
     latestAmount: bigint,
     latestNonce: bigint,
-    latestSignature: Uint8Array
+    latestSignature: Uint8Array,
+    expiry: bigint
   ): Promise<string> {
     try {
       const state = await this.getChannelState(channelId);
@@ -375,7 +378,8 @@ export class ChannelManager {
         Buffer.from(channelId, 'hex'),
         latestAmount,
         latestNonce,
-        latestSignature
+        latestSignature,
+        expiry
       );
 
       // Invalidate cache to force fresh fetch on next read
@@ -600,7 +604,8 @@ export class ChannelManager {
     channelId: Buffer,
     latestAmount: bigint,
     latestNonce: bigint,
-    latestSignature: Uint8Array
+    latestSignature: Uint8Array,
+    expiry: bigint
   ): Promise<string> {
     const blockchainConfig: BlockchainConfig = {
       connection: this.connection,
@@ -616,7 +621,8 @@ export class ChannelManager {
       this.wallet.publicKey,
       latestAmount,
       latestNonce,
-      latestSignature
+      latestSignature,
+      expiry
     );
   }
 

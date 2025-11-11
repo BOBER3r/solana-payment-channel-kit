@@ -343,7 +343,8 @@ export async function sendCloseChannelTransaction(
   clientPubkey: PublicKey,
   latestAmount: bigint,
   latestNonce: bigint,
-  latestSignature: Uint8Array
+  latestSignature: Uint8Array,
+  expiry: bigint
 ): Promise<string> {
   const program = createProgramInstance(config.connection, wallet, config.programId);
 
@@ -369,8 +370,27 @@ export async function sendCloseChannelTransaction(
   const nonceBN = new BN(latestNonce.toString());
   const signatureArray = Array.from(latestSignature);
 
+  // Serialize the claim message (same format as client used for signing)
+  // IMPORTANT: Use the SAME expiry that was used when the client created the signature
+  const message = serializeClaimMessage({
+    channelId: channelPDA,
+    server: channelAccount.server,
+    amount: latestAmount,
+    nonce: latestNonce,
+    expiry,
+  });
+
+  // Create Ed25519 verification instruction
+  // This must be placed immediately before the close instruction
+  const ed25519Instruction = Ed25519Program.createInstructionWithPublicKey({
+    publicKey: clientPubkey.toBytes(),
+    message,
+    signature: latestSignature,
+  });
+
   try {
-    const signature = await program.methods
+    // Build the close instruction (don't execute yet)
+    const closeInstruction = await program.methods
       .closeChannel(amountBN, nonceBN, signatureArray)
       .accounts({
         channel: channelPDA,
@@ -382,8 +402,26 @@ export async function sendCloseChannelTransaction(
         instructionSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
         tokenProgram: TOKEN_PROGRAM_ID,
       } as any)
-      .signers([wallet])
-      .rpc();
+      .instruction();
+
+    // Create transaction with both instructions
+    // Ed25519 verification MUST come first
+    const transaction = new Transaction().add(ed25519Instruction).add(closeInstruction);
+
+    // Get recent blockhash
+    const { blockhash, lastValidBlockHeight } = await getRecentBlockhashWithRetry(
+      config.connection
+    );
+    transaction.recentBlockhash = blockhash;
+    transaction.lastValidBlockHeight = lastValidBlockHeight;
+    transaction.feePayer = wallet.publicKey;
+
+    // Sign and send
+    transaction.sign(wallet);
+    const signature = await config.connection.sendRawTransaction(transaction.serialize(), {
+      skipPreflight: false,
+      preflightCommitment: config.commitment || 'confirmed',
+    });
 
     await confirmTransactionWithRetry(
       config.connection,
