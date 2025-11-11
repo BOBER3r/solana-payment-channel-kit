@@ -10,13 +10,13 @@ idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
 members = ["programs/*"]
 
 [programs.localnet]
-payment_channel = "H8SsYx7Z8qp12AvaX8oEWDCHWo8JYmEK21zWLWcfW4Zc"
+payment_channel = "CEVo4h4qnZkJVgzahQ9XwYz7a8NuCWdFcoiYiX6mZS1t"
 
 [programs.devnet]
-payment_channel = "H8SsYx7Z8qp12AvaX8oEWDCHWo8JYmEK21zWLWcfW4Zc"
+payment_channel = "CEVo4h4qnZkJVgzahQ9XwYz7a8NuCWdFcoiYiX6mZS1t"
 
 [programs.mainnet]
-payment_channel = "H8SsYx7Z8qp12AvaX8oEWDCHWo8JYmEK21zWLWcfW4Zc"
+payment_channel = "CEVo4h4qnZkJVgzahQ9XwYz7a8NuCWdFcoiYiX6mZS1t"
 
 [registry]
 url = "https://api.apr.dev"
