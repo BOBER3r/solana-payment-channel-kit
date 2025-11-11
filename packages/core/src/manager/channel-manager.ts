@@ -336,7 +336,14 @@ export class ChannelManager {
   /**
    * Closes a payment channel and returns remaining funds to client
    *
+   * SECURITY: Requires the client's latest payment authorization to prevent theft.
+   * The program will automatically claim any unpaid authorized amounts for the server
+   * before returning remaining funds to the client.
+   *
    * @param channelId - Channel identifier
+   * @param latestAmount - Highest cumulative amount client authorized
+   * @param latestNonce - Nonce of the latest authorization
+   * @param latestSignature - Client's Ed25519 signature of the latest authorization
    * @returns Transaction signature
    *
    * @throws {ChannelNotFoundError} If channel doesn't exist
@@ -344,17 +351,31 @@ export class ChannelManager {
    *
    * @example
    * ```typescript
-   * const signature = await manager.closeChannel(channelId);
+   * // Client has authorized payments totaling 5 USDC
+   * const signature = await manager.closeChannel(
+   *   channelId,
+   *   BigInt(5_000_000),  // 5 USDC in micro-units
+   *   BigInt(10),          // nonce 10
+   *   latestSignature      // signature from last authorization
+   * );
    * console.log('Channel closed:', signature);
    * ```
    */
-  async closeChannel(channelId: string): Promise<string> {
+  async closeChannel(
+    channelId: string,
+    latestAmount: bigint,
+    latestNonce: bigint,
+    latestSignature: Uint8Array
+  ): Promise<string> {
     try {
       const state = await this.getChannelState(channelId);
 
-      // Send close channel transaction
+      // Send close channel transaction with latest authorization
       const signature = await this.sendCloseChannelTransaction(
-        Buffer.from(channelId, 'hex')
+        Buffer.from(channelId, 'hex'),
+        latestAmount,
+        latestNonce,
+        latestSignature
       );
 
       // Invalidate cache to force fresh fetch on next read
@@ -576,7 +597,10 @@ export class ChannelManager {
    * Sends transaction to close a channel
    */
   private async sendCloseChannelTransaction(
-    channelId: Buffer
+    channelId: Buffer,
+    latestAmount: bigint,
+    latestNonce: bigint,
+    latestSignature: Uint8Array
   ): Promise<string> {
     const blockchainConfig: BlockchainConfig = {
       connection: this.connection,
@@ -589,7 +613,10 @@ export class ChannelManager {
       blockchainConfig,
       this.wallet,
       channelId,
-      this.wallet.publicKey
+      this.wallet.publicKey,
+      latestAmount,
+      latestNonce,
+      latestSignature
     );
   }
 

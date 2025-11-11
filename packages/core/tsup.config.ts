@@ -14,6 +14,10 @@ export default defineConfig({
   external: [
     '@solana/web3.js',
     '@solana/spl-token',
+    '@coral-xyz/anchor',
+    '@x402-solana/core',
+    'bn.js',
+    'bs58',
   ],
   noExternal: [],
   treeshake: true,

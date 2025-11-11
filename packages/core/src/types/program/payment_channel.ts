@@ -103,6 +103,13 @@ export type PaymentChannel = {
           "writable": true
         },
         {
+          "name": "serverTokenAccount",
+          "docs": [
+            "Server's token account (for debt payment)"
+          ],
+          "writable": true
+        },
+        {
           "name": "tokenProgram",
           "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         }
@@ -251,7 +258,21 @@ export type PaymentChannel = {
         "- Can only close if expired OR client has no remaining balance",
         "- Remaining funds always go back to client",
         "- Channel is marked as Closed to prevent further operations",
-        "- Closes both accounts and returns rent to client (rent reclamation)"
+        "- Closes both accounts and returns rent to client (rent reclamation)",
+        "Close channel and return remaining funds to client",
+        "",
+        "SECURITY FIX: Client must provide their latest payment authorization",
+        "to prevent theft by closing before server claims on-chain",
+        "",
+        "# Arguments",
+        "* `latest_amount` - The highest cumulative amount client has authorized",
+        "* `latest_nonce` - The nonce of that authorization",
+        "* `latest_signature` - Client's Ed25519 signature proving they authorized it",
+        "",
+        "# Security",
+        "- If latest_amount > server_claimed, we auto-claim for the server first",
+        "- This prevents client from closing before server claims and stealing services",
+        "- Client can only get back funds they haven't actually authorized"
       ],
       "discriminator": [
         0,
@@ -329,6 +350,12 @@ export type PaymentChannel = {
           "signer": true
         },
         {
+          "name": "client",
+          "docs": [
+            "Client pubkey (for signature verification)"
+          ]
+        },
+        {
           "name": "clientTokenAccount",
           "docs": [
             "Client's token account to receive remaining funds"
@@ -336,11 +363,43 @@ export type PaymentChannel = {
           "writable": true
         },
         {
+          "name": "serverTokenAccount",
+          "docs": [
+            "Server's token account to receive auto-claimed funds"
+          ],
+          "writable": true
+        },
+        {
+          "name": "instructionSysvar",
+          "docs": [
+            "Sysvar for Ed25519 signature verification"
+          ],
+          "address": "Sysvar1nstructions1111111111111111111111111"
+        },
+        {
           "name": "tokenProgram",
           "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "latestAmount",
+          "type": "u64"
+        },
+        {
+          "name": "latestNonce",
+          "type": "u64"
+        },
+        {
+          "name": "latestSignature",
+          "type": {
+            "array": [
+              "u8",
+              64
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "disputeChannel",

@@ -25,6 +25,7 @@ import {
 } from '@solana/spl-token';
 import { ChannelState, ChannelStatus } from '../types';
 import * as anchor from '@coral-xyz/anchor';
+import BN from 'bn.js';
 // Import the generated TypeScript types from our package
 import { PaymentChannel } from '../types/program/payment_channel';
 import { serializeClaimMessage } from '../crypto/message';
@@ -236,9 +237,9 @@ export async function sendOpenChannelTransaction(
   // Derive channel token account PDA (program will initialize it)
   const [channelTokenAccount] = getChannelTokenAccount(channelId, config.programId);
 
-  const expiryTimestamp = new anchor.BN(Math.floor(expiry.getTime() / 1000));
-  const depositAmount = new anchor.BN(deposit.toString());
-  const creditLimitAmount = new anchor.BN(creditLimit.toString());
+  const expiryTimestamp = new BN(Math.floor(expiry.getTime() / 1000));
+  const depositAmount = new BN(deposit.toString());
+  const creditLimitAmount = new BN(creditLimit.toString());
 
   try {
     const signature = await program.methods
@@ -301,7 +302,7 @@ export async function sendAddFundsTransaction(
   // Use PDA for channel token account
   const [channelTokenAccount] = getChannelTokenAccount(channelId, config.programId);
 
-  const amountBN = new anchor.BN(amount.toString());
+  const amountBN = new BN(amount.toString());
 
   try {
     const signature = await program.methods
@@ -333,16 +334,23 @@ export async function sendAddFundsTransaction(
 
 /**
  * Closes a payment channel and returns remaining funds to client
+ * Requires the client's latest payment authorization to auto-claim for server
  */
 export async function sendCloseChannelTransaction(
   config: BlockchainConfig,
   wallet: Keypair,
   channelId: Buffer,
-  clientPubkey: PublicKey
+  clientPubkey: PublicKey,
+  latestAmount: bigint,
+  latestNonce: bigint,
+  latestSignature: Uint8Array
 ): Promise<string> {
   const program = createProgramInstance(config.connection, wallet, config.programId);
 
   const [channelPDA] = getChannelPDA(channelId, config.programId);
+
+  // Fetch channel to get server pubkey
+  const channelAccount = await program.account.paymentChannel.fetch(channelPDA);
 
   // Use PDA for channel token account
   const [channelTokenAccount] = getChannelTokenAccount(channelId, config.programId);
@@ -352,15 +360,26 @@ export async function sendCloseChannelTransaction(
     clientPubkey
   );
 
+  const serverTokenAccount = await getAssociatedTokenAddress(
+    config.usdcMint,
+    channelAccount.server
+  );
+
+  const amountBN = new BN(latestAmount.toString());
+  const nonceBN = new BN(latestNonce.toString());
+  const signatureArray = Array.from(latestSignature);
+
   try {
     const signature = await program.methods
-      .closeChannel()
+      .closeChannel(amountBN, nonceBN, signatureArray)
       .accounts({
         channel: channelPDA,
+        channelTokenAccount,
         closer: wallet.publicKey,
         client: clientPubkey,
-        channelTokenAccount,
         clientTokenAccount,
+        serverTokenAccount,
+        instructionSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
         tokenProgram: TOKEN_PROGRAM_ID,
       } as any)
       .signers([wallet])
@@ -477,8 +496,8 @@ export async function sendClaimPaymentTransaction(
     serverWallet.publicKey
   );
 
-  const amountBN = new anchor.BN(amount.toString());
-  const nonceBN = new anchor.BN(nonce.toString());
+  const amountBN = new BN(amount.toString());
+  const nonceBN = new BN(nonce.toString());
   const signatureArray = Array.from(clientSignature);
 
   try {
