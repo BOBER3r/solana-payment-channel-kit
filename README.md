@@ -17,7 +17,7 @@ This monorepo provides a complete payment channels solution for the x402 payment
 - **99.8% cost reduction** for high-frequency API access
 - **Instant payments** (no blockchain confirmation wait)
 - **Automatic fallback** to regular x402 when channels aren't beneficial
-- **Production-ready** Anchor program, TypeScript SDKs, and framework integrations
+- **Comprehensive** Anchor program, TypeScript SDKs, and framework integrations
 
 ## 📦 Packages
 
@@ -31,9 +31,9 @@ This monorepo provides a complete payment channels solution for the x402 payment
 
 | Package | Description | Location | Version |
 |---------|-------------|----------|---------|
-| **@x402-channels/core** | Core channel management logic and types | [`packages/core/`](packages/core/) | 0.1.0 |
-| **@x402-channels/server** | Server-side middleware (Express, NestJS, Fastify) | [`packages/server/`](packages/server/) | 0.1.0 |
-| **@x402-channels/client** | Client SDK with automatic payment routing | [`packages/client/`](packages/client/) | 0.1.0 |
+| **@solana-payment-channel/core** | Core channel management logic and types | [`packages/core/`](packages/core/) | 0.2.7 |
+| **@solana-payment-channel/server** | Server-side middleware (Express, NestJS, Fastify) | [`packages/server/`](packages/server/) | 0.2.2 |
+| **@solana-payment-channel/client** | Client SDK with automatic payment routing | [`packages/client/`](packages/client/) | 0.2.2 |
 
 ### Examples
 
@@ -81,7 +81,7 @@ pnpm deploy:devnet
 **Server (NestJS):**
 
 ```typescript
-import { UseChannelPayment } from '@x402-channels/server/nestjs';
+import { UseChannelPayment } from '@solana-payment-channel/server/nestjs';
 
 @Controller('api')
 export class ApiController {
@@ -102,7 +102,7 @@ export class ApiController {
 **Client:**
 
 ```typescript
-import { createClient } from '@x402-channels/client';
+import { createClient } from '@solana-payment-channel/client';
 
 // Create client (works like fetch!)
 const client = createClient({
@@ -451,7 +451,7 @@ pnpm generate-idl
 5. **Expiry Protection**: Channels automatically expire after timeout
 6. **Dispute Resolution**: On-chain arbitration available
 
-**⚠️ IMPORTANT**: This code has NOT been audited. Do NOT use in production without a professional security audit!
+**⚠️ IMPORTANT**: This code has NOT been professionally audited. Do NOT use on mainnet or in production without a comprehensive security audit!
 
 ## 🌐 Integration with @x402-solana
 
@@ -460,7 +460,7 @@ This monorepo integrates with the existing `@x402-solana` packages:
 ```typescript
 // Server integration
 import { PaymentVerifier } from '@x402-solana/server';
-import { ChannelPaymentService } from '@x402-channels/server';
+import { ChannelPaymentService } from '@solana-payment-channel/server';
 
 // Automatic fallback
 const paymentService = new ChannelPaymentService({
@@ -470,7 +470,7 @@ const paymentService = new ChannelPaymentService({
 
 // Client integration
 import { X402Client } from '@x402-solana/client';
-import { createClient } from '@x402-channels/client';
+import { createClient } from '@solana-payment-channel/client';
 
 // Client handles routing automatically
 const client = createClient({ wallet, rpcUrl });
@@ -588,4 +588,4 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 Made with ❤️ for the Solana ecosystem
 
-**⚡️ 99.8% cheaper • ⚡️ 400x faster • ⚡️ Production-ready**
+**⚡️ 99.8% cheaper • ⚡️ 400x faster • ⚡️ In Development**
