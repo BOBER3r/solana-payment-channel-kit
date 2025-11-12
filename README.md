@@ -1,5 +1,7 @@
 # x402 Solana Payment Channels Monorepo
 
+## [BoberPay](https://boberpay.com/)
+
 **Production-grade payment channels implementation for the x402 protocol on Solana**
 
 Enable efficient micropayments with 99.8% cost reduction for high-frequency API access.
