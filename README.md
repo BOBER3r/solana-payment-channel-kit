@@ -9,7 +9,7 @@ Enable efficient micropayments with 99.8% cost reduction for high-frequency API 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9+-blue.svg)](https://www.typescriptlang.org/)
 [![Solana](https://img.shields.io/badge/Solana-1.18+-green.svg)](https://solana.com/)
-[![Anchor](https://img.shields.io/badge/Anchor-0.32+-purple.svg)](https://www.anchor-lang.com/)
+[![Anchor](https://img.shields.io/badge/Anchor-0.31+-purple.svg)](https://www.anchor-lang.com/)
 
 ## 🎯 What is This?
 
